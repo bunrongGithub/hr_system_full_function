@@ -1,0 +1,1242 @@
+#include<stdio.h>
+#include<conio.h>
+#include<stdlib.h>
+
+void insertValue() {
+	printf("\n1. at begining");
+	printf("\n2. at the end");
+	printf("\n3. at after ");
+	printf("\n4. back to menu ");
+}
+void deleteValue() {
+	printf("\n1. at beginning");
+	printf("\n2. at end");
+	printf("\n3. after value");
+	printf("\n4. back to menu ");
+}
+
+//================== Singly linked list ===================
+void insertAtBegining(int);
+void DisplaySinglyList();
+void insertAtEnd(int);
+void insertAfter(int ,int);
+void RemoveFromBeginning();
+void removeFromEnd();
+void removeAfter(int);
+
+int ch,ch1,ch2,ch3,v1;
+int SinglyValue,afterValue;
+char yn[1];
+//===========================================
+struct singlyNode {
+	int data;
+	struct singlyNode *next;
+}*head = NULL;
+//============================================ Circular linked list ===================
+struct singlyNode *circular_head = NULL;
+
+void insertAtBeginningCircular(int value) {
+	struct singlyNode *newNode = (struct singlyNode*)malloc(sizeof(struct singlyNode));
+	newNode->data = value;
+	if (circular_head == NULL) {
+		newNode->next = newNode;
+		circular_head = newNode;
+	} else {
+		struct singlyNode *temp = circular_head;
+		while (temp->next != circular_head) {
+			temp = temp->next;
+		}
+		newNode->next = circular_head;
+		temp->next = newNode;
+		circular_head = newNode;
+	}
+}
+
+void insertAtEndCircular(int value) {
+	struct singlyNode *newNode = (struct singlyNode*)malloc(sizeof(struct singlyNode));
+	newNode->data = value;
+	if (circular_head == NULL) {
+		newNode->next = newNode;
+		circular_head = newNode;
+	} else {
+		struct singlyNode *temp = circular_head;
+		while (temp->next != circular_head) {
+			temp = temp->next;
+		}
+		newNode->next = circular_head;
+		temp->next = newNode;
+	}
+}
+void insertAfterCircular(int afterValue, int value) {
+	struct singlyNode *temp = circular_head;
+	while (temp != NULL && temp->data != afterValue) {
+		temp = temp->next;
+		if (temp == circular_head) {
+			break;
+		}
+	}
+	if (temp == circular_head && temp->data != afterValue) {
+		printf("Value not found\n");
+		return;
+	}
+	struct singlyNode *newNode = (struct singlyNode*)malloc(sizeof(struct singlyNode));
+	newNode->data = value;
+	newNode->next = temp->next;
+	temp->next = newNode;
+}
+
+
+void displayCircularList() {
+	if (circular_head == NULL) {
+		printf("List is empty\n");
+		return;
+	}
+	struct singlyNode *temp = circular_head;
+	do {
+		printf("[%d]--->", temp->data);
+		temp = temp->next;
+	} while (temp != circular_head);
+	printf("[NULL]");
+}
+void deleteAtBeginningCircular() {
+	if (circular_head == NULL) {
+		printf("List is empty\n");
+		return;
+	}
+	if (circular_head->next == circular_head) {
+		free(circular_head);
+		circular_head = NULL;
+		return;
+	}
+	struct singlyNode *temp = circular_head;
+	while (temp->next != circular_head) {
+		temp = temp->next;
+	}
+	temp->next = circular_head->next;
+	free(circular_head);
+	circular_head = temp->next;
+}
+
+void deleteAtEndCircular() {
+	if (circular_head == NULL) {
+		printf("List is empty\n");
+		return;
+	}
+	if (circular_head->next == circular_head) {
+		free(circular_head);
+		circular_head = NULL;
+		return;
+	}
+	struct singlyNode *temp = circular_head;
+	while (temp->next->next != circular_head) {
+		temp = temp->next;
+	}
+	free(temp->next);
+	temp->next = circular_head;
+}
+
+void deleteAfterCircular(int afterValue) {
+	if (circular_head == NULL) {
+		printf("List is empty\n");
+		return;
+	}
+	struct singlyNode *temp = circular_head;
+	while (temp != NULL && temp->data != afterValue) {
+		temp = temp->next;
+		if (temp == circular_head) {
+			break;
+		}
+	}
+	if (temp == circular_head && temp->data != afterValue) {
+		printf("Value not found\n");
+		return;
+	}
+	if (temp->next == circular_head) {
+		printf("No node to remove after given value\n");
+		return;
+	}
+	struct singlyNode *nodeToRemove = temp->next;
+	temp->next = nodeToRemove->next;
+	free(nodeToRemove);
+}
+
+//=====================================================================================
+//=============== doubly linked list =====================================================
+struct DoublyNode {
+	int data;
+	struct DoublyNode *prev;
+	struct DoublyNode *next;
+};
+
+struct DoublyNode *doubly_head = NULL;
+
+void insertAtBeginningDoubly(int value) {
+	struct DoublyNode *newNode = (struct DoublyNode*)malloc(sizeof(struct DoublyNode));
+	newNode->data = value;
+	newNode->prev = NULL;
+	newNode->next = doubly_head;
+	if (doubly_head != NULL) {
+		doubly_head->prev = newNode;
+	}
+	doubly_head = newNode;
+}
+
+void insertAtEndDoubly(int value) {
+	struct DoublyNode *newNode = (struct DoublyNode*)malloc(sizeof(struct DoublyNode));
+	newNode->data = value;
+	newNode->next = NULL;
+	if (doubly_head == NULL) {
+		newNode->prev = NULL;
+		doubly_head = newNode;
+		return;
+	}
+	struct DoublyNode *temp = doubly_head;
+	while (temp->next != NULL) {
+		temp = temp->next;
+	}
+	temp->next = newNode;
+	newNode->prev = temp;
+}
+void insertAfterDoubly(int afterValue, int value) {
+	struct DoublyNode *temp = doubly_head;
+	while (temp != NULL && temp->data != afterValue) {
+		temp = temp->next;
+	}
+	if (temp == NULL) {
+		printf("Value not found\n");
+		return;
+	}
+	struct DoublyNode *newNode = (struct DoublyNode*)malloc(sizeof(struct DoublyNode));
+	newNode->data = value;
+	newNode->next = temp->next;
+	newNode->prev = temp;
+	if (temp->next != NULL) {
+		temp->next->prev = newNode;
+	}
+	temp->next = newNode;
+}
+
+void displayDoublyList() {
+	if (doubly_head == NULL) {
+		printf("List is empty\n");
+		return;
+	}
+	struct DoublyNode *temp = doubly_head;
+	while (temp != NULL) {
+		printf("[%d]--->", temp->data);
+		temp = temp->next;
+	}
+	printf("[NULL]");
+}
+void deleteAtBeginningDoubly() {
+	if (doubly_head == NULL) {
+		printf("List is empty\n");
+		return;
+	}
+	struct DoublyNode *temp = doubly_head;
+	doubly_head = doubly_head->next;
+	if (doubly_head != NULL) {
+		doubly_head->prev = NULL;
+	}
+	free(temp);
+}
+
+void deleteAtEndDoubly() {
+	if (doubly_head == NULL) {
+		printf("List is empty\n");
+		return;
+	}
+	struct DoublyNode *temp = doubly_head;
+	while (temp->next != NULL) {
+		temp = temp->next;
+	}
+	if (temp->prev != NULL) {
+		temp->prev->next = NULL;
+	} else {
+		doubly_head = NULL;
+	}
+	free(temp);
+}
+
+void deleteAfterDoubly(int afterValue) {
+	struct DoublyNode *temp = doubly_head;
+	while (temp != NULL && temp->data != afterValue) {
+		temp = temp->next;
+	}
+	if (temp == NULL || temp->next == NULL) {
+		printf("Value not found or no node to remove after given value\n");
+		return;
+	}
+	struct DoublyNode *nodeToRemove = temp->next;
+	temp->next = nodeToRemove->next;
+	if (nodeToRemove->next != NULL) {
+		nodeToRemove->next->prev = temp;
+	}
+	free(nodeToRemove);
+}
+//====================================  Circular Doubly link list ============================================
+struct CircularDoublyNode {
+	int data;
+	struct CircularDoublyNode *prev;
+	struct CircularDoublyNode *next;
+};
+
+struct CircularDoublyNode *circular_doubly_head = NULL;
+
+void insertAtBeginningCircularDoubly(int value) {
+	struct CircularDoublyNode *newNode = (struct CircularDoublyNode*)malloc(sizeof(struct CircularDoublyNode));
+	newNode->data = value;
+	if (circular_doubly_head == NULL) {
+		newNode->prev = newNode;
+		newNode->next = newNode;
+		circular_doubly_head = newNode;
+		return;
+	}
+	struct CircularDoublyNode *last = circular_doubly_head->prev;
+	newNode->next = circular_doubly_head;
+	newNode->prev = last;
+	last->next = newNode;
+	circular_doubly_head->prev = newNode;
+	circular_doubly_head = newNode;
+}
+
+void insertAtEndCircularDoubly(int value) {
+	struct CircularDoublyNode *newNode = (struct CircularDoublyNode*)malloc(sizeof(struct CircularDoublyNode));
+	newNode->data = value;
+	if (circular_doubly_head == NULL) {
+		newNode->prev = newNode;
+		newNode->next = newNode;
+		circular_doubly_head = newNode;
+		return;
+	}
+	struct CircularDoublyNode *last = circular_doubly_head->prev;
+	newNode->next = circular_doubly_head;
+	newNode->prev = last;
+	last->next = newNode;
+	circular_doubly_head->prev = newNode;
+}
+
+void insertAfterCircularDoubly(int afterValue, int value) {
+	struct CircularDoublyNode *temp = circular_doubly_head;
+	do {
+		if (temp->data == afterValue) {
+			break;
+		}
+		temp = temp->next;
+	} while (temp != circular_doubly_head);
+
+	if (temp == circular_doubly_head && temp->data != afterValue) {
+		printf("Value not found\n");
+		return;
+	}
+
+	struct CircularDoublyNode *newNode = (struct CircularDoublyNode*)malloc(sizeof(struct CircularDoublyNode));
+	newNode->data = value;
+
+	struct CircularDoublyNode *next = temp->next;
+
+	temp->next = newNode;
+	newNode->prev = temp;
+
+	next->prev = newNode;
+	newNode->next = next;
+}
+void displayCircularDoublyList() {
+	if (circular_doubly_head == NULL) {
+		printf("List is empty\n");
+		return;
+	}
+
+	struct CircularDoublyNode *temp = circular_doubly_head;
+	do {
+		printf("[%d]--->", temp->data);
+		temp = temp->next;
+	} while (temp != circular_doubly_head);
+	printf("[HEAD]");
+}
+void deleteAtBeginningCircularDoubly() {
+	if (circular_doubly_head == NULL) {
+		printf("List is empty\n");
+		return;
+	}
+	if (circular_doubly_head->next == circular_doubly_head) {
+		free(circular_doubly_head);
+		circular_doubly_head = NULL;
+		return;
+	}
+	struct CircularDoublyNode *last = circular_doubly_head->prev;
+	struct CircularDoublyNode *temp = circular_doubly_head;
+	last->next = temp->next;
+	temp->next->prev = last;
+	circular_doubly_head = temp->next;
+	free(temp);
+}
+
+void deleteAtEndCircularDoubly() {
+	if (circular_doubly_head == NULL) {
+		printf("List is empty\n");
+		return;
+	}
+	if (circular_doubly_head->next == circular_doubly_head) {
+		free(circular_doubly_head);
+		circular_doubly_head = NULL;
+		return;
+	}
+	struct CircularDoublyNode *last = circular_doubly_head->prev;
+	struct CircularDoublyNode *secondLast = last->prev;
+	secondLast->next = circular_doubly_head;
+	circular_doubly_head->prev = secondLast;
+	free(last);
+}
+
+void deleteAfterCircularDoubly(int afterValue) {
+	struct CircularDoublyNode *temp = circular_doubly_head;
+	do {
+		if (temp->data == afterValue) {
+			break;
+		}
+		temp = temp->next;
+	} while (temp != circular_doubly_head);
+
+	if (temp == circular_doubly_head && temp->data != afterValue) {
+		printf("Value not found\n");
+		return;
+	}
+
+	if (temp->next == circular_doubly_head) {
+		printf("No node to remove after given value\n");
+		return;
+	}
+
+	struct CircularDoublyNode *nodeToRemove = temp->next;
+
+	temp->next = nodeToRemove->next;
+	nodeToRemove->next->prev = temp;
+
+	free(nodeToRemove);
+}
+//==============================================================================================
+int main() {
+
+A:
+	system("cls");
+	printf("===Linked List implementer===");
+	printf("\n\n1. Singly Linked list ");
+	printf("\n2. Circular Linked list ");
+	printf("\n3. Doubly Linked list ");
+	printf("\n4. Cirluar Doubly linked list ");
+	printf("\nPlease choose an option : ");
+	scanf("%d",&ch);
+	switch(ch) {
+		case 1 :////singly============
+singly_menu:
+			system("cls");
+			printf("==== Singly Linked List ====\n");
+			printf("\n1. insert value ");
+			printf("\n2. delete value ");
+			printf("\n3. display ");
+			printf("\n4. back to main menu ");
+			printf("\n5. Exit ");
+			printf("\nPlease choose an option : ");
+			scanf("%d",&ch1);
+			switch(ch1) {
+				case 1 :
+					system("cls");
+Re_enter:
+					printf("==== Singly Linked List =====\n");
+					printf("\nInput Value : ");
+					scanf("%d",&SinglyValue);
+					system("cls");
+					insertValue();
+					printf("\nWhere do you want to add value :");
+					scanf("%d",&v1);
+					switch(v1) {
+						case 1:
+							system("cls");
+							insertAtBegining(SinglyValue);
+							printf("\nSucessfully insert ..!");
+D1 :
+							printf("\nInsert more ?(Yes = y/No = n) : ");
+							scanf("%s",&yn);
+							switch(*yn) {
+								case 'N' :
+									;
+								case 'n' :
+									goto singly_menu;
+								case 'Y' :
+								case 'y' :
+									goto Re_enter;
+								default  :
+									printf("\nYou enter the wrong choise !!!");
+									printf("please enter the correct one !!");
+									getch();
+									goto D1;
+							}
+						case 2 :
+							system ("cls");
+							printf("==== Singly Linked list =====\n");
+							insertAtEnd(SinglyValue);
+							printf("\nSucessfully insert ..!");
+D2 :
+							system ("cls");
+							printf("\nInsert more ?(Yes = y/No = n) : ");
+							scanf("%s",&yn);
+							switch(*yn) {
+								case 'N' :
+									;
+								case 'n' :
+									goto singly_menu;
+								case 'Y' :
+								case 'y' :
+									goto Re_enter;
+								default  :
+									printf("\nYou enter the wrong choise !!!");
+									printf("please enter the correct one !!");
+									getch();
+									goto D2;
+							}
+						case 3 :
+							system ("cls");
+							printf("==== Singly Linked list =====\n");
+							DisplaySinglyList();
+							printf("\n\nWhich node you want to insert after : ");
+							scanf("%d",&afterValue);
+							insertAfter(afterValue,SinglyValue);
+D3 :
+							system ("cls");
+							printf("\nSucessfully insert ..!");
+							printf("\nInsert more ?(Yes = y/No = n) : ");
+							scanf("%s",&yn);
+							switch(*yn) {
+								case 'N' :
+									;
+								case 'n' :
+									goto singly_menu;
+								case 'Y' :
+								case 'y' :
+									goto Re_enter;
+								default  :
+									printf("\nYou enter the wrong choise !!!");
+									printf("please enter the correct one !!");
+									getch();
+									goto D3;
+							}
+
+						case 4 :
+							goto singly_menu;
+					}
+					getch();
+				case 3 :
+					system ("cls");
+					printf("==== Singly Linked list ====\n\n");
+					DisplaySinglyList();
+					printf("\n\npress anykey to back to menu !!");
+					getch();
+					goto singly_menu;
+				case 2 :
+Re_delete:
+					system ("cls");
+					printf("\n====== Singly Linked List ======\n");
+					DisplaySinglyList();
+					printf("\n");
+					insertValue();
+					printf("\n\nWhere you want to remove : ");
+					scanf("%d",&ch2);
+					switch(ch2) {
+						case 1 :
+							system ("cls");
+							RemoveFromBeginning();
+							printf("\nElement Sucessfully Remove ..!");
+D4:
+							printf("\nDo you want to delete more ?(Yes = y/No = n) :");
+							scanf("%s",&yn);
+							switch(*yn) {
+								case 'N' :
+									;
+								case 'n' :
+									goto singly_menu;
+								case 'Y' :
+								case 'y' :
+									goto Re_delete;
+								default  :
+									printf("\nYou enter the wrong choise !!!");
+									printf("\nplease enter the correct one !!");
+									getch();
+									goto D4;
+							}
+						case 2 :
+							system ("cls");
+							removeFromEnd();
+							printf("\nElement Sucessfully Remove ..!");
+D5:
+							printf("\nDo you want to delete more ?(Yes = y/No = n) :");
+							scanf("%s",&yn);
+							switch(*yn) {
+								case 'N' :
+								case 'n' :
+									goto singly_menu;
+								case 'Y' :
+								case 'y' :
+									goto Re_delete;
+								default  :
+									printf("\nYou enter the wrong choise !!!");
+									printf("\nplease enter the correct one !!");
+									getch();
+									goto D5;
+							}
+						case 3 :
+							system("cls");
+							printf("\n====== Singly Linked List ======\n");
+							DisplaySinglyList();
+							printf("\n\nEnter value after which to remove: ");
+							scanf("%d", &afterValue);
+							removeAfter(afterValue);
+							printf("\nElement Sucessfully Remove ..!");
+D6:
+							printf("\nDo you want to delete more ?(Yes = y/No = n) :");
+							scanf("%s",&yn);
+							switch(*yn) {
+								case 'N' :
+									;
+								case 'n' :
+									goto singly_menu;
+								case 'Y' :
+								case 'y' :
+									goto Re_delete;
+								default  :
+									printf("\nYou enter the wrong choise !!!");
+									printf("\nplease enter the correct one !!");
+									getch();
+									goto D6;
+							}
+						case 4 :
+							goto singly_menu;
+					}
+				case 4 :
+					goto A;
+				case 5 :
+					return 0;
+			}
+		case 2 :
+circular_menu:// Circular =======
+			int value;
+			system("cls");
+			printf("==== Circular Linked List ====\n");
+			printf("\n1. insert value ");
+			printf("\n2. delete value ");
+			printf("\n3. display ");
+			printf("\n4. back to main menu ");
+			printf("\n5. Exit ");
+			printf("\nPlease choose an option : ");
+			scanf("%d", &ch3);
+			switch (ch3) {
+				case 1:
+Reinsert_CR:
+					system("cls");
+					printf("==== Circular Linked List =====\n");
+					printf("\nInput Value : ");
+					scanf("%d", &value);
+					int ch4;
+					insertValue();
+					printf("\nHow do you want to insert : ");
+					scanf("%d",&ch4);
+					switch(ch4) {
+						case 1 :
+							system ("cls");
+							printf("\n==== Circular Linked list ====\n\n");
+							insertAtBeginningCircular(value);
+							printf("\nSucessfully insert ..!");
+D7:
+							printf("\nDo you want to insert more ?(Yes = y/No = n) :");
+							scanf("%s",&yn);
+							switch(*yn) {
+								case 'N' :
+								case 'n' :
+									goto circular_menu;
+								case 'Y' :
+								case 'y' :
+									goto Reinsert_CR;
+								default  :
+									printf("\nYou enter the wrong choise !!!");
+									printf("\nplease enter the correct one !!");
+									getch();
+									goto D7;
+							}
+						case 2:
+							system ("cls");
+							printf("\n==== Circular Linked list ====\n\n");
+							insertAtEndCircular(value);
+							printf("\nSucessfully insert ..!");
+D8:
+							printf("\nDo you want to insert more ?(Yes = y/No = n) :");
+							scanf("%s",&yn);
+							switch(*yn) {
+								case 'N' :
+								case 'n' :
+									goto circular_menu;
+								case 'Y' :
+								case 'y' :
+									goto Reinsert_CR;
+								default  :
+									printf("\nYou enter the wrong choise !!!");
+									printf("\nplease enter the correct one !!");
+									getch();
+									goto D8;
+							}
+						case 3:
+							system ("cls");
+							int afterValueCR;
+							printf("\n==== Circular Linked list ====\n\n");
+							displayCircularList();
+							printf("\n\nEnter value after which to insert: ");
+							scanf("%d", &afterValueCR);
+							insertAfterCircular(afterValueCR,value);
+							printf("\nSucessfully insert ..!");
+D9:
+							printf("\nDo you want to insert more ?(Yes = y/No = n) :");
+							scanf("%s",&yn);
+							switch(*yn) {
+								case 'N' :
+								case 'n' :
+									goto circular_menu;
+								case 'Y' :
+								case 'y' :
+									goto Reinsert_CR;
+								default  :
+									printf("\nYou enter the wrong choise !!!");
+									printf("\nplease enter the correct one !!");
+									getch();
+									goto D9;
+							}
+					}
+				case 2:
+Redelete_CR:
+					system("cls");
+					displayCircularList();
+					int ch5;
+					deleteValue();
+					printf("\nEnter your choice: ");
+					scanf("%d",&ch5);
+					switch(ch5) {
+						case 1:
+							system ("cls");
+							deleteAtBeginningCircular();
+							printf("\nSucessfully deleted ..!");
+D10:
+							printf("\nDo you want to delete more ?(Yes = y/No = n) :");
+							scanf("%s",&yn);
+							switch(*yn) {
+								case 'N' :
+								case 'n' :
+									goto circular_menu;
+								case 'Y' :
+								case 'y' :
+									goto Redelete_CR;
+								default  :
+									printf("\nYou enter the wrong choise !!!");
+									printf("\nEnter the correct one !!");
+									getch();
+									goto D10;
+							}
+						case 2:
+							system ("cls");
+							deleteAtEndCircular();
+							printf("\nSucessfully deleted ..!");
+D11:
+							printf("\nEnter your choice: ");
+							scanf("%d",&ch5);
+							switch(*yn) {
+								case 'N' :
+								case 'n' :
+									goto circular_menu;
+								case 'Y' :
+								case 'y' :
+									goto Redelete_CR;
+								default  :
+									printf("\nEnter your choice: ");
+									scanf("%d",&ch5);
+									getch();
+									goto D11;
+							}
+						case 3:
+							system ("cls");
+							int afterValue;
+							displayCircularList();
+							printf("\nEnter value after which to delete: ");
+							scanf("%d", &afterValue);
+							deleteAfterCircular(afterValue);
+							printf("\nSucessfully deleted ..!");
+D12:
+							printf("\nDo you want to delete more ?(Yes = y/No = n) :");
+							scanf("%s",&yn);
+							switch(*yn) {
+								case 'N' :
+								case 'n' :
+									goto circular_menu;
+								case 'Y' :
+								case 'y' :
+									goto Redelete_CR;
+								default  :
+									printf("\nYou enter the wrong choise !!!");
+									printf("\nEnter the correct one !!");
+									getch();
+									goto D12;
+							}
+					}
+				case 3:
+					printf("\n==== Circular Linked list ====\n\n");
+					displayCircularList();
+					getch();
+					goto circular_menu;
+				case 4:
+					goto A;
+				case 5:
+					break;
+
+			}
+
+//================== boudbly
+		case 3 :
+doubly_menu:
+			int valueDB;
+			system("cls");
+			printf("==== Doubly Linked List ====\n");
+			printf("\n1. insert value ");
+			printf("\n2. delete value ");
+			printf("\n3. display ");
+			printf("\n4. back to main menu ");
+			printf("\n5. Exit ");
+			printf("\nPlease choose an option : ");
+			scanf("%d", &ch3);
+			switch (ch3) {
+				case 1:
+Reinsert_DB:
+					system("cls");
+					printf("==== Doubly Linked List =====\n");
+					printf("\nInput Value : ");
+					scanf("%d", &valueDB);
+					int ch4;
+					insertValue();
+					printf("\nHow do you want to insert : ");
+					scanf("%d",&ch4);
+					switch(ch4) {
+						case 1 :
+							system ("cls");
+							printf("\n==== Doubly Linked list ====\n\n");
+							insertAtBeginningDoubly(valueDB);
+							printf("\nSucessfully insert ..!");
+DA:
+							printf("\nDo you want to insert more ?(Yes = y/No = n) :");
+							scanf("%s",&yn);
+							switch(*yn) {
+								case 'N' :
+								case 'n' :
+									goto doubly_menu;
+								case 'Y' :
+								case 'y' :
+									goto Reinsert_DB;
+								default  :
+									printf("\nYou enter the wrong choise !!!");
+									printf("\nEnter the correct one !!");
+									getch();
+									goto DA;
+							}
+						case 2:
+							system ("cls");
+							printf("\n==== Doubly Linked list ====\n\n");
+							insertAtEndDoubly(valueDB);
+							printf("\nSucessfully insert ..!");
+Ds:
+							printf("\nDo you want to insert more ?(Yes = y/No = n) :");
+							scanf("%s",&yn);
+							switch(*yn) {
+								case 'N' :
+								case 'n' :
+									goto doubly_menu;
+								case 'Y' :
+								case 'y' :
+									goto Reinsert_DB;
+								default  :
+									getch();
+									goto Ds;
+							}
+						case 3:
+							system ("cls");
+							int afterValueDB;
+							displayDoublyList();
+							printf("\nEnter value after which to insert: ");
+							scanf("%d", &afterValueDB);
+							int headValue = doubly_head->data;
+							insertAfterDoubly(headValue, valueDB);
+							printf("\nSucessfully inserted ..!");
+Dd:
+							printf("\nDo you want to insert more ?(Yes = y/No = n) :");
+							scanf("%s",&yn);
+							switch(*yn) {
+								case 'N' :
+								case 'n' :
+									goto doubly_menu;
+								case 'Y' :
+								case 'y' :
+									goto Reinsert_DB;
+								default  :
+
+									getch();
+									goto Dd;
+							}
+					}
+				case 2:
+Redelete_DB:
+					system("cls");
+					displayDoublyList();
+					int ch5;
+					deleteValue();
+					printf("\nEnter your choice: ");
+					scanf("%d",&ch5);
+					switch(ch5) {
+						case 1:
+							system ("cls");
+							deleteAtBeginningDoubly();
+							printf("\nSucessfully deleted ..!");
+Df:
+							printf("\nDo you want to delete more ?(Yes = y/No = n) :");
+							scanf("%s",&yn);
+							switch(*yn) {
+								case 'N' :
+								case 'n' :
+									goto doubly_menu;
+								case 'Y' :
+								case 'y' :
+									goto Redelete_DB;
+								default  :
+									printf("\nEnter your choice: ");
+									scanf("%d",&ch5);
+									getch();
+									goto Df;
+							}
+						case 2:
+							system ("cls");
+							deleteAtEndDoubly();
+							printf("\nSucessfully deleted ..!");
+Dq:
+							printf("\nEnter your choice: ");
+							scanf("%d",&ch5);
+							switch(*yn) {
+								case 'N' :
+								case 'n' :
+									goto doubly_menu;
+								case 'Y' :
+								case 'y' :
+									goto Redelete_DB;
+								default  :
+									printf("\nEnter your choice: ");
+									scanf("%d",&ch5);
+									getch();
+									goto Dq;
+							}
+						case 3:
+							system ("cls");
+							int afterValue;
+							displayDoublyList();
+							printf("\nEnter value after which to delete: ");
+							scanf("%d", &afterValue);
+							deleteAfterDoubly(afterValue);
+							printf("\nSucessfully deleted ..!");
+Dt:
+							printf("\nDo you want to delete more ?(Yes = y/No = n) :");
+							scanf("%s",&yn);
+							switch(*yn) {
+								case 'N' :
+								case 'n' :
+									goto doubly_menu;
+								case 'Y' :
+								case 'y' :
+									goto Redelete_DB;
+								default  :
+									getch();
+									goto Dt;
+							}
+					}
+				case 3:
+					system("cls");
+					printf("\n======== Doubly Linked List ========\n ");
+					displayDoublyList();
+					getch();
+				case 4:
+					goto A;
+				case 5:
+					break;
+			}
+		case 4:
+circular_doubly_menu:
+			int valueCD;
+			system("cls");
+			printf("==== Circular Doubly Linked List ====\n");
+			printf("\n1. insert value ");
+			printf("\n2. delete value ");
+			printf("\n3. display ");
+			printf("\n4. back to main menu ");
+			printf("\n5. Exit ");
+			printf("\nPlease choose an option : ");int CDL;
+			scanf("%d", &CDL);
+			switch (CDL) {
+				case 1:
+Reinsert_CD:
+					system("cls");
+					printf("==== Circular Doubly Linked List =====\n");
+					printf("\nInput Value : ");
+					scanf("%d", &valueCD);
+					int ch12;
+					insertValue();
+					printf("\nHow do you want to insert : ");
+					scanf("%d",&ch12);
+					switch(ch12) {
+						case 1 :
+							system ("cls");
+							printf("\n==== Circular Doubly Linked list ====\n\n");
+							insertAtBeginningCircularDoubly(valueCD);
+							printf("\nSucessfully insert ..!");
+DA1:
+							printf("\nDo you want to insert more ?(Yes = y/No = n) :");
+							scanf("%s",&yn);
+							switch(*yn) {
+								case 'N' :
+								case 'n' :
+									goto circular_doubly_menu;
+								case 'Y' :
+								case 'y' :
+									goto Reinsert_CD;
+								default  :
+									printf("\nYou enter the wrong choise !!!");
+									printf("\nEnter the correct one !!");
+									getch();
+									goto DA1;
+							}
+						case 2:
+							system ("cls");
+							printf("\n==== Circular Doubly Linked list ====\n\n");
+							insertAtEndCircularDoubly(valueCD);
+							printf("\nSucessfully insert ..!");
+Ds1:
+							printf("\nDo you want to insert more ?(Yes = y/No = n) :");
+							scanf("%s",&yn);
+							switch(*yn) {
+								case 'N' :
+								case 'n' :
+									goto circular_doubly_menu;
+								case 'Y' :
+								case 'y' :
+									goto Reinsert_CD;
+								default  :
+									getch();
+									goto Ds1;
+							}
+						case 3:
+							system ("cls");
+							int afterValueCD;
+							displayCircularDoublyList();
+							printf("\nEnter value after which to insert: ");
+							scanf("%d", &afterValueCD);
+							insertAfterCircularDoubly(afterValueCD, valueCD);
+							printf("\nSucessfully inserted ..!");
+Dd1:
+							printf("\nDo you want to insert more ?(Yes = y/No = n) :");
+							scanf("%s",&yn);
+							switch(*yn) {
+								case 'N' :
+								case 'n' :
+									goto circular_doubly_menu;
+								case 'Y' :
+								case 'y' :
+									goto Reinsert_CD;
+								default  :
+									getch();
+									goto Dd1;
+							}
+					}
+					break;
+				case 2:
+Redelete_CD:
+					system("cls");
+					displayCircularDoublyList();
+					int ch13;
+					deleteValue();
+					printf("\nEnter your choice: ");
+					scanf("%d",&ch13);
+					switch(ch13) {
+						case 1:
+							system ("cls");
+							deleteAtBeginningCircularDoubly();
+							printf("\nSucessfully deleted ..!");
+Df1:
+							printf("\nDo you want to delete more ?(Yes = y/No = n) :");
+							scanf("%s",&yn);
+							switch(*yn) {
+								case 'N' :
+								case 'n' :
+									goto circular_doubly_menu;
+								case 'Y' :
+								case 'y' :
+									goto Redelete_CD;
+								default  :
+									getch();
+									goto Df1;
+							}
+						case 2:
+							system ("cls");
+							deleteAtEndCircularDoubly();
+							printf("\nSucessfully deleted ..!");		
+Dg1:
+							printf("\nDo you want to delete more ?(Yes = y/No = n) :");
+							scanf("%s",&yn);
+							switch(*yn) {
+								case 'N' :
+								case 'n' :
+									goto circular_doubly_menu;
+								case 'Y' :
+								case 'y' :
+									goto Redelete_CD;
+								default  :
+									getch();
+									goto Dg1;
+							}
+						case 3:
+							system ("cls");
+							int afterValueCD;
+							displayCircularDoublyList();
+							printf("\nEnter value after which to delete: ");
+							scanf("%d", &afterValueCD);
+							deleteAfterCircularDoubly(afterValueCD);
+							printf("\nSucessfully deleted ..!");
+Dh1:
+							printf("\nDo you want to delete more ?(Yes = y/No = n) :");
+							scanf("%s",&yn);
+							switch(*yn) {
+								case 'N' :
+								case 'n' :
+									goto circular_doubly_menu;
+								case 'Y' :
+								case 'y' :
+									goto Redelete_CD;
+								default  :
+									getch();
+									goto Dh1;
+							}
+					}
+					break;
+				case 3:
+					printf("\n\n======= Circular Doubly linked list ===========\n");
+					displayCircularDoublyList();
+					printf("\nPress anykey to continue ...");
+					getch();
+					goto circular_doubly_menu;
+				case 4:
+					goto A; 
+				case 5:
+					exit(0);
+				default:
+					printf("Invalid option\n");
+					break;
+			}
+	}
+}
+void insertAtEnd(int SinglyValue) {
+	struct singlyNode *newNode,*temp;
+	newNode = (struct singlyNode*)malloc(sizeof(struct singlyNode));
+	newNode->data = SinglyValue;
+	newNode->next = NULL;
+	if(head == NULL) {
+		head=newNode;
+	} else {
+		temp= head;
+		while(temp->next !=NULL) {
+			temp = temp->next;
+		}
+		temp->next = newNode;
+	}
+}
+void insertAtBegining(int SinglyValue) {
+	struct singlyNode *newNode;
+	newNode = (struct singlyNode*)malloc(sizeof(struct singlyNode));
+	newNode->data = SinglyValue;
+	newNode->next = head;
+	head =newNode;
+}
+void DisplaySinglyList() {
+	struct singlyNode *temp;
+	if(head==NULL) {
+		printf("\n List is Empty .");
+	} else {
+		temp = head;
+		while(temp != NULL) {
+			printf("[%d]--->",temp->data);
+			temp = temp->next;
+		}
+		printf("[NULL]");
+	}
+}
+void insertAfter(int afterValue, int SinglyValue) {
+	struct singlyNode *temp, *newNode;
+	newNode = (struct singlyNode*)malloc(sizeof(struct singlyNode));
+	newNode->data = SinglyValue;
+	newNode->next = NULL;
+	if (head == NULL) {
+		printf("List is empty.");
+	} else {
+		temp = head;
+		while (temp != NULL && temp->data != afterValue) {
+			temp = temp->next;
+		}
+		if (temp == NULL) {
+			printf("Value not found.");
+		} else {
+			newNode->next = temp->next;
+			temp->next = newNode;
+		}
+	}
+}
+void RemoveFromBeginning() {
+	struct singlyNode *oldhead = head ;
+	if(head != NULL) {
+		head=head->next;
+		free(oldhead);
+	}
+}
+void removeFromEnd() {
+	if (head == NULL) {
+		printf("List is empty.");
+		return;
+	}
+	if (head->next == NULL) {
+		free(head);
+		head = NULL;
+		return;
+	}
+	struct singlyNode *temp = head;
+	while (temp->next->next != NULL) {
+		temp = temp->next;
+	}
+	free(temp->next);
+	temp->next = NULL;
+}
+void removeAfter(int afterValue) {
+	if (head == NULL) {
+		printf("List is empty.");
+		return;
+	}
+	struct singlyNode *temp = head;
+	while (temp != NULL && temp->data != afterValue) {
+		temp = temp->next;
+	}
+	if (temp == NULL || temp->next == NULL) {
+		printf("Value not found or no node to remove after it.");
+		return;
+	}
+	struct singlyNode *nodeToRemove = temp->next;
+	temp->next = nodeToRemove->next;
+	free(nodeToRemove);
+}
+
+
+
+

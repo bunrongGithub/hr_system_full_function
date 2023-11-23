@@ -1,0 +1,44 @@
+<div class="row heading">
+   <div class="cell">Heading 1</div>
+   <div class="cell">Heading 2</div>
+   <div class="cell">Heading 3</div>
+</div>
+<div class="row">
+   <div class="cell">Data 1</div>
+   <div class="cell">Data 2</div>
+   <div class="cell">Data 3</div>
+</div>
+<div class="row">
+   <div class="cell">Data 4</div>
+   <div class="cell">Data 5</div>
+   <div class="cell">Data 6</div>
+</div>
+...
+</div>
+`
+
+CSS:
+```css
+<style>
+   .table {
+display: flex;
+flex-direction: column;
+width: 100%;
+}
+
+.row {
+display: flex;
+width: 100%;
+}
+
+.cell {
+flex: 1;
+padding: 5px;
+border: 1px solid black;
+}
+
+.heading {
+font-weight: bold;
+background-color: lightgray;
+}
+</style>
