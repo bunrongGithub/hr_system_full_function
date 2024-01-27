@@ -8,33 +8,31 @@ $datetime = date('Y-m-d H:i:s');
 $today = date('Y-m-d');
 
 if (isset($_POST["btnadd"])) {
-    $txt_menu_id = $_POST["txt_menu_id"];
-    $txt_username = $_POST["txt_username"];
-    $txt_create = $_POST["txt_create"];
-    $txt_view = $_POST["txt_view"];
-    $txt_update = $_POST["txt_update"];
-    $txt_delete = $_POST["txt_delete"];
+    $v_username = $_POST["txt_username"];
+    $v_menu_id = $_POST["txt_menu_id"];
+    $v_create = $_POST["txt_create"];
+    $v_view = $_POST["txt_view"];
+    $v_update = $_POST["txt_update"];
+    $v_delete = $_POST["txt_delete"];
     $datetime = date('Y-m-d H:i:s');
 
-    $sql = "INSERT INTO user_role 
-                        (
-                            ur_menu_id, 
-                            ur_user_id, 
-                            ur_is_create, 
-                            ur_is_read, 
-                            ur_is_update, 
-                            ur_is_delete, 
-                            created_at 
+    $sql = "INSERT INTO user_role
+                        ( ur_user_id
+                           , ur_menu_id
+                           , ur_is_create
+                           , ur_is_read
+                           , ur_is_update
+                           , ur_is_delete
+                           , created_at
                         ) 
                   VALUES 
-                        (
-                            '$txt_menu_id', 
-                            '$txt_username', 
-                            '$txt_create', 
-                            '$txt_view', 
-                            '$txt_update', 
-                            '$txt_delete', 
-                            '$datetime'
+                        ('$v_username'
+                        , '$v_menu_id'
+                        , '$v_create'
+                        , '$v_view'
+                        , '$v_update'
+                        , '$v_delete'
+                        , '$datetime'
                         )";
     $result = mysqli_query($connect, $sql);
     header('location:user_role.php?message=success');
@@ -50,13 +48,13 @@ if (isset($_POST["btnupdate"])) {
     $v_update = $_POST["edit_update"];
     $v_delete = $_POST["edit_delete"];
 
-    $sql = "UPDATE user_role SET ur_menu_id = '$v_menu_id', 
-                                ur_user_id = '$v_username', 
-                                ur_is_create = '$v_create', 
-                                ur_is_read = '$v_view', 
-                                ur_is_update = '$v_update', 
-                                ur_is_delete = '$v_delete' WHERE ur_id = $id";
-
+    $sql = "UPDATE user_role SET ur_menu_id = '$v_menu_id'
+                                , ur_user_id = '$v_username'
+                                , ur_is_create = '$v_create'
+                                , ur_is_read = '$v_view'
+                                , ur_is_update = '$v_update'
+                                , ur_is_delete = '$v_delete'
+                                WHERE ur_id = $id";
     $result = mysqli_query($connect, $sql);
     header('location:user_role.php?message=update');
 }

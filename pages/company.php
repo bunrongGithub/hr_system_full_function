@@ -81,19 +81,16 @@ if(isset($_POST['upload'])){
 <html>
 
 <head>
-   <meta charset="UTF-8">
-   <?php
-   include "title_icon.php";
-   ?>
-   <!-- <title>HR System | Dashboard</title>
-        <link rel = "icon" href = "../img/login_logo.png" 
-        type = "image/x-icon"> -->
-   <meta content='width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no' name='viewport'>
-   <!-- bootstrap 3.0.2 -->
-   <link href="../css/bootstrap.min.css" rel="stylesheet" type="text/css" />
+<meta charset="UTF-8" http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+   <?php include "title_icon.php"; ?>
+   <meta content='width=device-width,
+            initial-scale=1,
+            maximum-scale=1,
+            user-scalable=no' name='viewport'>
+   <!--bootstrap 3.0.2-->
+   <link rel="stylesheet" href="../css/bootstrap.min.css" type='text/css' />
    <!-- font Awesome -->
    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-   <!-- <link href="../css/font-awesome.min.css" rel="stylesheet" type="text/css" /> -->
    <!-- Ionicons -->
    <link href="../css/ionicons.min.css" rel="stylesheet" type="text/css" />
    <!-- Morris chart -->
@@ -111,13 +108,6 @@ if(isset($_POST['upload'])){
    <!-- Theme style -->
    <link href="../css/style.css" rel="stylesheet" type="text/css" />
    <link href="../css/AdminLTE.css" rel="stylesheet" type="text/css" />
-
-   <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
-   <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
-   <!--[if lt IE 9]>
-          <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
-          <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
-        <![endif]-->
 </head>
 
 <body class="skin-black">
@@ -324,6 +314,7 @@ if(isset($_POST['upload'])){
                                        <td><?php echo $v_address; ?></td>
                                        <td><?php echo $v_note; ?></td>
                                        <td style="text-align:center;">
+                                          <a href="company_auth_user.php?sent_id=<?php echo $row['c_id']; ?>" class="btn btn-info btn-sm"><i style="color:white;" class="fa fa-key"></i></a>
                                           <!-- <a href="edit_user.php?id=<?php echo $row['c_id']; ?>" class="btn btn-info btn-sm"><i style="color:white;" class="fa fa-eye"></i></a> -->
                                           <a onclick="doUpdate(<?php echo $row['c_id']; ?>,
                                                         '<?php echo $v_namekh; ?>',
@@ -379,8 +370,8 @@ if(isset($_POST['upload'])){
       </aside><!-- /.right-side -->
    </div><!-- ./wrapper -->
 
-   <!-- jQuery 2.0.2 -->
-   <script src="http://ajax.googleapis.com/ajax/libs/jquery/2.0.2/jquery.min.js"></script>
+  <!-- jQuery 2.0.2 -->
+  <script src="http://ajax.googleapis.com/ajax/libs/jquery/2.0.2/jquery.min.js"></script>
    <!-- jQuery UI 1.10.3 -->
    <script src="../js/jquery-ui-1.10.3.min.js" type="text/javascript"></script>
    <!-- DATA TABES SCRIPT -->
@@ -407,7 +398,9 @@ if(isset($_POST['upload'])){
    <!-- iCheck -->
    <script src="../js/plugins/iCheck/icheck.min.js" type="text/javascript"></script>
    <!-- AdminLTE App -->
-   <script src="../js/AdminLTE/app.js" type="text/javascript"></script>
+   <script src="../js/AdminLTE/app.js" type="text/javascript"></script>>
+
+   <!-- AdminLTE dashboard demo (This is only for demo purposes) -->
 
 
    <script type="text/javascript">
@@ -424,7 +417,6 @@ if(isset($_POST['upload'])){
          $("#menu_setting").addClass("active");
          $("#company").addClass("active");
          $("#company").css("background-color", "##367fa9");
-
          $('#info_data').dataTable();
       });
    </script>

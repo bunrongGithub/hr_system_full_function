@@ -3,6 +3,7 @@ include '../config/db_connect.php';
 date_default_timezone_set("Asia/Bangkok");
 $datetime = date('Y-m-d H:i:s');
 $yeardate = date('Y-m-d');
+
 $user_id = $_SESSION['user_id'];
 $username = $_SESSION['username'];
 
@@ -258,11 +259,15 @@ if (isset($_GET["del_id"])) {
                                                       <select class="form-control" name="status" id="status" data-live-search="true">
                                                          <option selected value=""></option>
                                                          <?php
-                                                         $sql = "SELECT * FROM text_termination_status";
-                                                         $result = mysqli_query($connect, $sql);
-                                                         while ($row = mysqli_fetch_assoc($result)) {
-                                                            echo '<option value=' . $row['tts_id'] . '>' . $row['tts_name'] . '</option>';
-                                                         }
+                                                            $user_id = $_SESSION['user_id'];
+                                                            $sql = "SELECT * FROM text_termination_status A
+                                                                              LEFT JOIN text_termination_status_user B ON B.tsu_status_id=A.tts_id
+                                                                              WHERE tsu_user_id=$user_id
+                                                                              ";
+                                                            $result = mysqli_query($connect, $sql);
+                                                            while ($row = mysqli_fetch_assoc($result)) {
+                                                               echo '<option value=' . $row['tts_id'] . '>' . $row['tts_name'] . '</option>';
+                                                            }
                                                          ?>
                                                       </select>
                                                    </div>
@@ -387,12 +392,16 @@ if (isset($_GET["del_id"])) {
                                              <select class="form-control" name="edit_status" id="edit_status" data-live-search="true">
                                                 <option selected value=""></option>
                                                 <?php
-                                                $sql = "SELECT * FROM text_termination_status";
-                                                $result = mysqli_query($connect, $sql);
-                                                while ($row = mysqli_fetch_assoc($result)) {
-                                                   echo '<option value="' . $row['tts_id'] . '" >' . $row['tts_name'] . '</option>';
-                                                }
-                                                ?>
+                                                   $user_id = $_SESSION['user_id'];
+                                                   $sql = "SELECT * FROM text_termination_status A
+                                                                     LEFT JOIN text_termination_status_user B ON B.tsu_status_id=A.tts_id
+                                                                     WHERE tsu_user_id=$user_id
+                                                                     ";
+                                                   $result = mysqli_query($connect, $sql);
+                                                   while ($row = mysqli_fetch_assoc($result)) {
+                                                      echo '<option value="' . $row['tts_id'] . '" >' . $row['tts_name'] . '</option>';
+                                                   }
+                                                   ?>
                                              </select>
                                           </div>
                                     </div>

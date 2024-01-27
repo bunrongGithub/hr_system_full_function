@@ -250,6 +250,7 @@ if (isset($_GET["del_id"])) {
                                         <thead>
                                             <tr>
                                                 <th>No</th>
+                                                <th>Year</th>
                                                 <th>Salary</th>
                                                 <th>Work Accident Rate</th>
                                                 <th>Health Care Rate</th>
@@ -264,6 +265,7 @@ if (isset($_GET["del_id"])) {
                                             $i = 1;
                                             while ($row = $result->fetch_assoc()) {
                                                 $v_i = $i++;
+                                                $v_year = $row["sn_year"];
                                                 $v_range_from = $row["sn_range_from"];
                                                 $v_range_to = $row["sn_range_to"];
                                                 $v_accident_rate = $row["sn_acci_rate"];
@@ -271,6 +273,7 @@ if (isset($_GET["del_id"])) {
                                             ?>
                                                 <tr>
                                                     <td><?php echo $v_i; ?></td>
+                                                    <td><?php echo $v_year; ?></td>
                                                     <td><?php echo "From: ".$v_range_from." - To: ".$v_range_to; ?></td>
                                                     <td><?php echo $v_accident_rate." %"; ?></td>
                                                     <td><?php echo $v_health_rate." %"; ?></td>

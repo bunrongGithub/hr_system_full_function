@@ -171,7 +171,9 @@ if (isset($_POST['update_status'])) {
                               <div class="row">
                                  <div class="col-md-12">
                                     <div class="form-group col-xs-6">
-                                       <label for="pa_no">PA No:</label>
+                                       <label id="txt_pano">PA No:(auto)*
+                                          <input disabled type="checkbox" id="checkbox_range">
+                                       </label>
                                        <input class="form-control" type="text" name="pa_no" id="pa_no">
                                     </div>
                                     <div class="form-group col-xs-6">
@@ -333,7 +335,7 @@ if (isset($_POST['update_status'])) {
                                           <i class="fa fa-eye"></i>
                                        </a>
                                        <a onclick="doUpdate(<?= $row['as_id']; ?>" data-toggle="modal" data-target="#exampleModal<?= $row['as_id']; ?>" class="btn btn-primary btn-sm"><i class="fa fa-edit"></i></a>
-                                       <a href="asset_requisition_print.php?id=<?php echo $row['as_id']; ?>" class="btn btn-success btn-sm btn_do_print" ><i class="fa fa-print"></i></a>
+                                       <a href="asset_requisition_print.php?id=<?php echo $row['as_id']; ?>" class="btn btn-success btn-sm btn_do_print"><i class="fa fa-print"></i></a>
                                        <a onclick="return confirm('Are you sure delete?')" href="asset_requisition.php?id=<?= $row['as_id']; ?>" class="btn btn-danger btn-sm"><i class="fa fa-trash"></i></a>
                                     </td>
                                  </tr>
@@ -619,6 +621,19 @@ if (isset($_POST['update_status'])) {
 
    <!-- AdminLTE dashboard demo (This is only for demo purposes) -->
    <script type="text/javascript">
+      $(document).ready(function() {
+         $("#txt_pano").on("click", function() {
+            fetch("api.php").then(respone => respone.json()).then(phpdata => {
+               const lastnumber = phpdata.pano.match(/\d+$/)[0];
+               console.log(lastnumber)
+               const nextNumber  = Number(lastnumber) +1;
+               $("#pa_no").val(`PA:${nextNumber}`);
+            }).catch(erorr=>{
+               console.error("Error fetching PHP data:", error);
+            })
+            $("#checkbox_range").prop("disabled", false);
+         });
+      });
       function doUpdate(id, name, note) {
          $('#position_id').val(id);
          $('#edit_name').val(name);
@@ -671,4 +686,5 @@ if (isset($_POST['update_status'])) {
       }
    </script>
 </body>
+
 </html>

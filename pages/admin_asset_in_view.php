@@ -5,17 +5,52 @@ $datetime = date('Y-m-d H:i:s');
 $yeardate = date('Y-m-d');
 $user_id = $_SESSION['user_id'];
 $username = $_SESSION['username'];
+$id ?? $_GET['id'];
 if (isset($_GET['id'])) {
    $id = $_GET['id'];
    $sql = "SELECT * FROM admin_asset_in WHERE adassi_id = '$id'";
    $result = mysqli_query($connect, $sql);
    $row = mysqli_fetch_assoc($result);
+   $_code = $row['adassi_code_id'];
+   $_category = $row['adassi_category_id'];
+   $_as_type = $row['adassi_type'];
+   $_qty = $row['adassi_qty'];
+   $_total = $row['adassi_total'];
+   $_status = $row['adassi_status'];
+   $_contact = $row['adassi_contact'];
+   $_mou = $row['adassi_mou'];
+   $_period = $row['adassi_war_peri'];
+   $_location = $row['adassi_location'];
+   $_as_no =  $row['adassi_no'];
+   $_as_name = $row['adassi_asset_name'];
+   $_pa_no_ref = $row['adassi_ref'];
+   $_current_price = $row['adassi_unit_price'];
+   $_strat_date = $row['adassi_date'];
+   $_suppler_name = $row['adassi_supplier_name'];
+   $_inv_no_ref = $row['adassi_inv_ref'];
+   $_inspection = $row['adassi_insepection'];
+   $_condition = $row['adassi_war_con'];
+   $_comment = $row['adassi_note'];
+   $_img = $row['adassi_img'];
 }
-if (isset($_GET['id_'])) {
-   $id_del = $_GET['id_'];
+if (isset($_GET['deleted'])) {
+   $id_del = $_GET['deleted'];
    $sql = "DELETE FROM admin_asset_in_material where adasim_id = '$id_del'";
    $result = mysqli_query($connect, $sql);
-   header("location:admin_asset_in.php?message=delete");
+   header("location:admin_asset_in_view.php?id=" . $id . "");
+   exit();
+}
+if(isset($_POST['btn_update'])){
+   $_post_id = $_POST['edit_txt_id'];
+   $_post_qty = $_POST['edit_mater_qty'];
+   $_post_material_name = $_POST['edit_mater_name'];
+   $_post_mou = $_POST['edit_mater_mou'];
+   $sql = "UPDATE admin_asset_in_material SET 
+                                       adasim_name = '$_post_material_name',
+                                       adasim_qty = '$_post_qty',
+                                       adasim_mou = '$_post_mou' WHERE adasim_id = $_post_id";
+   $result = mysqli_query($connect,$sql);
+   header("location:admin_asset_in_view.php?id=" . $id . "");
    exit();
 }
 ?>
@@ -67,9 +102,11 @@ if (isset($_GET['id_'])) {
          .no_print {
             display: none !important;
          }
-         .dataTables_empty{
+
+         .dataTables_empty {
             display: none !important;
          }
+
          #info_data_filter,
          #info_data_length {
             display: none;
@@ -107,6 +144,50 @@ if (isset($_GET['id_'])) {
             <div class="col-xs-12 connectedSortable">
                <div class="box">
                   <div class="box-header">
+                     <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                        <div class="modal-dialog" role="document">
+                           <div class="modal-content">
+                              <div class="modal-header">
+                                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                 </button>
+                                 <h4 class="modal-title text-primary" id="exampleModalLabel">Update Material</h4>
+                              </div>
+                              <form action="" method="post">
+                                 <input type="hidden" name="edit_txt_id" id="edit_txt_id">
+                                 <div class="modal-body">
+                                    <div class="col-xs-12 form-group">
+                                    <div class="form-group col-xs-6">
+                                       <label for="">Material Name:</label>
+                                       <input type="text" name="edit_mater_name" class="form-control" id="edit_mater_name">
+                                    </div>
+                                    <div class="form-group col-xs-6">
+                                       <label for="">QTY:</label>
+                                       <input type="text" name="edit_mater_qty" class="form-control" id="edit_mater_qty">
+                                    </div>
+                                    <div class="form-group col-xs-6">
+                                       <label for="">Mou:</label>
+                                       <select type="text" name="edit_mater_mou" class="form-control" id="edit_mater_mou">
+                                          <option value="">select</option>
+                                          <?php 
+                                             $sql = "SELECT * FROM text_asset_in_mou";
+                                                $result = $connect->query($sql);
+                                                while($row = mysqli_fetch_assoc($result)){
+                                                   echo '<option value="'.$row['aim_id'].'">'.$row['aim_name'].'</option>';
+                                                }
+                                          ?>
+                                       </select>
+                                    </div>
+                                    </div>
+                                 </div>
+                                 <div class="modal-footer">
+                                    <button type="reset"  class="btn btn-sm btn-danger" data-dismiss="modal">Close</button>
+                                    <button type="submit"name="btn_update" class="btn btn-sm btn-primary">Save</button>
+                                 </div>
+                              </form>
+                           </div>
+                        </div>
+                     </div>
                      <form action="" enctype="multipart/form-data" method="post">
                         <div class="row col-xs-12">
                            <div class="row col-xs-4">
@@ -116,7 +197,7 @@ if (isset($_GET['id_'])) {
                                     <?php
                                     $v_select = mysqli_query($connect, "SELECT * FROM assest_code_creation ORDER BY ac_asset_code ASC");
                                     while ($row_se = mysqli_fetch_assoc($v_select)) {
-                                       if ($row['adassi_code_id'] == $row_se['ac_id']) {
+                                       if ($_code == $row_se['ac_id']) {
                                     ?>
                                           <option selected="selected" value="<?php echo $row_se['ac_id'] ?>"><?php echo $row_se['ac_asset_code']; ?></option>
                                        <?php
@@ -135,7 +216,7 @@ if (isset($_GET['id_'])) {
                                     <?php
                                     $v_select = mysqli_query($connect, "SELECT * FROM assest_code_creation ORDER BY as_asset_category ASC");
                                     while ($row_se = mysqli_fetch_assoc($v_select)) {
-                                       if ($row['adassi_category_id'] == $row_se['ac_id']) {
+                                       if ($_category == $row_se['ac_id']) {
                                     ?>
                                           <option selected="selected" value="<?php echo $row_se['ac_id'] ?>"><?php echo $row_se['as_asset_category']; ?></option>
                                        <?php
@@ -154,7 +235,7 @@ if (isset($_GET['id_'])) {
                                     <?php
                                     $v_select = mysqli_query($connect, "SELECT * FROM text_asset_code_creation_type ORDER BY acct_name ASC");
                                     while ($row_se = mysqli_fetch_assoc($v_select)) {
-                                       if ($row['adassi_type'] == $row_se['acct_id']) {
+                                       if ($_as_type == $row_se['acct_id']) {
                                     ?>
                                           <option selected="selected" value="<?php echo $row_se['acct_id'] ?>"><?php echo $row_se['acct_name']; ?></option>
                                        <?php
@@ -169,13 +250,13 @@ if (isset($_GET['id_'])) {
                               </div>
                               <div class="form-group col-xs-12">
                                  <label for="">QTY:</label>
-                                 <input style="font-weight: 800;" type="text" name="" id="" value="<?= $row['adassi_qty'] ?>" class="form-control">
+                                 <input style="font-weight: 800;" type="text" name="" id="" value="<?= $_qty ?>" class="form-control">
                               </div>
                               <div class="form-group col-xs-12">
                                  <label for="">Total Amount:</label>
                                  <div class="input-group">
                                     <div class="input-group-addon">$</div>
-                                    <input style="font-weight: 800;" type="text" name="" id="" value="<?= $row['adassi_total'] . '$' ?>" class="form-control">
+                                    <input style="font-weight: 800;" type="text" name="" id="" value="<?= $_total . '$' ?>" class="form-control">
                                  </div>
                               </div>
                               <div class="form-group col-xs-12">
@@ -184,7 +265,7 @@ if (isset($_GET['id_'])) {
                                     <?php
                                     $v_select = mysqli_query($connect, "SELECT * FROM text_asset_in_status ORDER BY ais_name ASC");
                                     while ($row_se = mysqli_fetch_assoc($v_select)) {
-                                       if ($row['adassi_status'] == $row_se['ais_id']) {
+                                       if ($_status == $row_se['ais_id']) {
                                     ?>
                                           <option selected="selected" value="<?php echo $row_se['ais_id'] ?>"><?php echo $row_se['ais_name']; ?></option>
                                        <?php
@@ -201,7 +282,7 @@ if (isset($_GET['id_'])) {
                                  <label for="edit_contact" class="form-label">Contact:</label>
                                  <div class="input-group">
                                     <div class="input-group-addon"><i class="fa fa-phone"></i></div>
-                                    <input type="text" value="<?= $row['adassi_contact'] ?>" name="edit_contact" id="edit_contact" class="form-control">
+                                    <input type="text" value="<?= $_contact ?>" name="edit_contact" id="edit_contact" class="form-control">
                                  </div>
                               </div>
                               <div class="form-group col-xs-12">
@@ -210,7 +291,7 @@ if (isset($_GET['id_'])) {
                                     <?php
                                     $v_select = mysqli_query($connect, "SELECT * FROM text_asset_in_mou ORDER BY aim_name ASC");
                                     while ($row_se = mysqli_fetch_assoc($v_select)) {
-                                       if ($row['adassi_mou'] == $row_se['aim_id']) {
+                                       if ($_mou == $row_se['aim_id']) {
                                     ?>
                                           <option selected="selected" value="<?php echo $row_se['aim_id'] ?>"><?php echo $row_se['aim_name']; ?></option>
                                        <?php
@@ -225,24 +306,24 @@ if (isset($_GET['id_'])) {
                               </div>
                               <div class="form-group col-xs-12">
                                  <label for="">Warranty Period:</label>
-                                 <input style="font-weight: 800;" type="number" name="" value="<?= $row['adassi_war_peri'] ?>" id="" class="form-control">
+                                 <input style="font-weight: 800;" type="number" name="" value="<?= $_period ?>" id="" class="form-control">
                               </div>
                               <div class="form-group col-md-12">
                                  <label for="edit_location" class="form-label">Location:</label>
                                  <div class="input-group">
                                     <div class="input-group-addon"><i class="fa fa-map-marker" aria-hidden="true"></i></div>
-                                    <input value="<?= $row['adassi_location'] ?>" type="text" name="edit_location" id="edit_location" class="form-control">
+                                    <input value="<?= $_location ?>" type="text" name="edit_location" id="edit_location" class="form-control">
                                  </div>
                               </div>
                            </div>
                            <div class="form-group col-xs-4">
                               <div class="form-group col-xs-12">
                                  <label for="">Asset No:</label>
-                                 <input style="font-weight: 800;" type="text" name="" value="<?= $row['adassi_no'] ?>" id="" class="form-control">
+                                 <input style="font-weight: 800;" type="text" name="" value="<?= $_as_no ?>" id="" class="form-control">
                               </div>
                               <div class="form-group col-xs-12">
                                  <label for="">Asset Name:</label>
-                                 <input style="font-weight: 800;" type="text" name="" id="" value="<?= $row['adassi_asset_name'] ?>" class="form-control">
+                                 <input style="font-weight: 800;" type="text" name="" id="" value="<?= $_as_name ?>" class="form-control">
                               </div>
                               <div class="form-group col-xs-12">
                                  <label for="">PA No Ref.:</label>
@@ -250,7 +331,7 @@ if (isset($_GET['id_'])) {
                                     <?php
                                     $v_select = mysqli_query($connect, "SELECT * FROM asset_requisiton ORDER BY as_pa_no ASC");
                                     while ($row_se = mysqli_fetch_assoc($v_select)) {
-                                       if ($row['adassi_ref'] == $row_se['as_id']) {
+                                       if ($_pa_no_ref == $row_se['as_id']) {
                                     ?>
                                           <option selected="selected" value="<?php echo $row_se['as_id'] ?>"><?php echo $row_se['as_pa_no']; ?></option>
                                        <?php
@@ -267,43 +348,43 @@ if (isset($_GET['id_'])) {
                                  <label for="">Current Unit Price:</label>
                                  <div class="input-group">
                                     <div class="input-group-addon">$</div>
-                                    <input style="font-weight: 800;" type="text" name="" id="" value="<?= $row['adassi_unit_price'] . '$' ?>" class="form-control">
+                                    <input style="font-weight: 800;" type="text" name="" id="" value="<?= $_current_price . '$' ?>" class="form-control">
                                  </div>
                               </div>
                               <div class="form-group col-xs-12">
                                  <label for="">Strat Date:</label>
-                                 <input style="font-weight: 800;" type="date" value="<?= $row['adassi_date'] ?>" name="" id="" class="form-control">
+                                 <input style="font-weight: 800;" type="date" value="<?= $_strat_date ?>" name="" id="" class="form-control">
                               </div>
                               <div class="form-group col-xs-12">
                                  <label for="">Supplier Name:</label>
-                                 <input style="font-weight: 800;" type="text" value="<?= $row['adassi_supplier_name'] ?>" name="" id="" class="form-control">
+                                 <input style="font-weight: 800;" type="text" value="<?= $_suppler_name ?>" name="" id="" class="form-control">
                               </div>
                               <div class="form-group col-xs-12">
                                  <label for="">Inv.No.Ref:</label>
-                                 <input style="font-weight: 800;" type="text" value="<?= $row['adassi_inv_ref'] ?>" name="" id="" class="form-control">
+                                 <input style="font-weight: 800;" type="text" value="<?= $_inv_no_ref ?>" name="" id="" class="form-control">
                               </div>
                               <div class="form-group col-xs-12">
                                  <label for="">Inspection:</label>
-                                 <input style="font-weight: 800;" type="text" value="<?= $row['adassi_insepection'] ?>" name="" id="" class="form-control">
+                                 <input style="font-weight: 800;" type="text" value="<?= $_inspection ?>" name="" id="" class="form-control">
                               </div>
                               <div class="form-group col-xs-12">
                                  <label for="">Warranty Condition:</label>
-                                 <input style="font-weight: 800;" type="text" value="<?= $row['adassi_war_con'] ?>" name="" id="" class="form-control">
+                                 <input style="font-weight: 800;" type="text" value="<?= $_condition ?>" name="" id="" class="form-control">
                               </div>
                               <div class="form-group col-md-12 ">
                                  <label for="">Comment:</label>
-                                 <textarea style="font-weight: 800;" class="form-control" name="edit_comment" id="edit_comment" rows="1"></textarea>
+                                 <textarea style="font-weight: 800;" class="form-control" name="edit_comment" id="edit_comment" rows="1"><?= $_comment ?></textarea>
                               </div>
                            </div>
                            <div class="row col-xs-4">
                               <div class="form-group col-xs-12">
                                  <label>Photo:</label><br />
-                                 <img id="show_photo" class="rounded img-thumbnail img-fuild" accept="image/*" alt="..." src="../img/<?php if ($row['adassi_img'] != '') {
-                                                                                                                                          echo 'upload/asset_in/' . $row['adassi_img'];
+                                 <img id="show_photo" class="rounded img-thumbnail img-fuild" accept="image/*" alt="..." src="../img/<?php if ($_img != '') {
+                                                                                                                                          echo 'upload/asset_in/' . $_img;
                                                                                                                                        } else {
                                                                                                                                           echo 'no_image.jpg';
                                                                                                                                        } ?>" width="300x" height="300px">
-                                 <input style="visibility: hidden;" type="file" id="edit_photo" name="edit_photo" values="upload" class="form-control" accept="image/*" onchange="show_photo_pre(event);"></input>
+                                 <input style="visibility: hidden;" type="file" id="edit_photo" name="edit_photo" values="upload" class="form-control" accept="image/*"></input>
                               </div>
                            </div>
                         </div>
@@ -312,7 +393,6 @@ if (isset($_GET['id_'])) {
                               <thead>
                                  <tr>
                                     <th class="text-center">No</th>
-                                    <th class="text-center">Material ID</th>
                                     <th class="text-center">Material Name</th>
                                     <th class="text-center">QTY</th>
                                     <th style="width: 150px;" class="text-center">Mou</th>
@@ -321,55 +401,42 @@ if (isset($_GET['id_'])) {
                               </thead>
                               <tbody>
                                  <?php
-                                 if (isset($_GET['material_id'])) {
-                                    $materail_code_id = $_GET['material_id'];
-                                    $sql_m = "SELECT admin_asset_in_material.adasim_id,
-                                                      admin_asset_in_material.adasim_material_id,
-                                                      admin_asset_in_material.adasim_name,
-                                                      admin_asset_in_material.adasim_qty,
-                                                      admin_asset_in_material.adasim_mou,
-                                                      admin_asset_in_material.adasim_remark FROM admin_asset_in_material
-                                                      LEFT JOIN admin_asset_in 
-                                                      ON admin_asset_in.material_id = admin_asset_in_material.adasim_material_id
-                                                      WHERE admin_asset_in.adassi_id = '$id'";
-                                    $result_m = mysqli_query($connect, $sql_m);
-                                    $i = 1;
-                                    while ($row_m = mysqli_fetch_assoc($result_m)) {
-                                       $v_i = $i++;
+                                 $sql_mat = "SELECT * FROM admin_asset_in_material A 
+                                    LEFT JOIN text_asset_in_mou B ON B.aim_id = A.adasim_mou
+                                    WHERE adasim_material_id = $id";
+                                 $query = $connect->query($sql_mat);
+                                 $i = 1;
+                                 while ($row_mat = $query->fetch_assoc()) {
+                                    $_count_i = $i++;
+                                    $_materail_name = $row_mat['adasim_name'];
+                                    $_materail_qty = $row_mat['adasim_qty'];
+                                    $_materail_mou = $row_mat['aim_name'];
                                  ?>
-                                       <tr>
-                                          <td class="text-center"><?= $v_i; ?></td>
-                                          <td class="text-center"><input type="text" class="form-control" value="<?= $row_m['adasim_material_id']; ?>"></td>
-                                          <td class="text-center"><input type="text" class="form-control" value="<?= $row_m['adasim_name']; ?>"></td>
-                                          <td class="text-center"><input type="text" class="form-control" value="<?= number_format($row_m['adasim_qty']); ?>"></td>
-                                          <td class="text-center">
-                                             <?php 
-                                                   
-                                                   $mou_id = $row_m['adasim_mou'];
-                                                   if($mou_id == null || $mou_id == 0) {
-                                                      echo $mou_id=null;
-                                                   }else{
-                                                      $sql = "SELECT * FROM text_asset_in_mou WHERE aim_id = '$mou_id'";
-                                                   $result = $connect->query($sql);
-                                                   $row = $result->fetch_assoc();
-                                                   echo $row['aim_name']; 
-                                                   }
-                                                                                                   ?>
-                                                
-                                             </td>
-                                          <td class="text-center" style="width: 100px; vertical-align: middle; ">
-                                             <a style="color: white;" class="btn btn_no_print btn-sm btn-danger" onclick="return confirm('Are you sure to delete?');" href="admin_asset_in_view.php?id_=<?= $row_m['adasim_id']; ?>"><i class="fa fa-trash"></i></a>
-                                          </td>
-                                       </tr>
+                                    <tr>
+                                       <td class="text-center"><?= $_count_i ?></td>
+                                       <td class="text-center"><?= $_materail_name ?></td>
+                                       <td class="text-center"><?= $_materail_qty ?></td>
+                                       <td class="text-center"><?= $_materail_mou ?></td>
+                                       <td class="text-center" style="width: 100px; vertical-align: middle; ">
+                                          <a style="color: white;" class="btn btn_no_print btn-sm btn-danger" onclick="return confirm('Are you sure to delete?');" href="admin_asset_in_view.php?deleted=<?= $row_mat['adasim_id'] ?>&id=<?= $id ?>">
+                                             <i class="fa fa-trash"></i>
+                                          </a>
+                                          <a style="color: white;" onclick="doUpdate('<?= $row_mat['adasim_id']; ?>',
+                                                                                 '<?=$row_mat['adasim_name'];?>',
+                                                                                 '<?=$row_mat['adasim_qty'];?>',
+                                                                                 '<?=$row_mat['adasim_mou'];?>',//name,qty,mou 
+                                                                              );" class="btn btn_no_print btn-sm btn-primary" data-toggle="modal" data-target="#exampleModal">
+                                             <i class="fa fa-edit"></i>
+                                          </a>
+                                       </td>
+                                    </tr>
                                  <?php
-                                    }
                                  }
                                  ?>
                               </tbody>
                            </table>
                         </div>
                         <div class="form-group col-xs-12 text-right">
-                           <button type="submit" onclick="window.print();" class="no_print btn btn-success btn-lg"><i class="fa fa-print fa-fw"></i> Print</button>
                            <a href="admin_asset_in.php" style="color:white;" class="no_print btn btn-danger btn-lg"><i class="fa fa-undo"></i> Back </a>
                         </div>
                      </form>
@@ -419,6 +486,12 @@ if (isset($_GET['id_'])) {
          $('#info_data').dataTable();
       });
 
+      function doUpdate(id,name,qty,mou) {
+         $("#edit_txt_id").val(id);
+         $("#edit_mater_name").val(name);
+         $("#edit_mater_qty").val(qty);
+         $("#edit_mater_mou").val(mou).change();
+      }
       function show_photo_pre(event) {
          if (event.target.files.length > 0) {
             var src = URL.createObjectURL(event.target.files[0]);

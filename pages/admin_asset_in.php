@@ -7,7 +7,7 @@ $user_id = $_SESSION['user_id'];
 $username = $_SESSION['username'];
 $targetDir = "../img/upload/asset_in/";
 $target_file = "../img/file/";
-
+$new_name='';
 $v_image = '';
 if (isset($_POST['btnadd'])) {
    $v_image = $_FILES['asset_image']['name'];
@@ -47,29 +47,34 @@ if (isset($_POST['btnadd'])) {
          move_uploaded_file($v_file['tmp_name'], "../img/file/" . $new_name);
       }
    }
+   
    $v_img_name = '';
    if (!empty($v_image)) {
       $v_img_name = date("Ymd") . '_' . basename($_FILES['asset_image']['name']);
       $v_img_fullname = $targetDir . date("Ymd") . "_" . basename($_FILES['asset_image']['name']);
       move_uploaded_file($_FILES['asset_image']['tmp_name'], $v_img_fullname);
    }
-   $v_material_id = $_POST['material_id'];
+   isset($new_name) ?? null;
    $sql_insert = "INSERT INTO admin_asset_in(adassi_img,adassi_no,adassi_ref,adassi_category_id
-                                            ,adassi_code_id,adassi_type,adassi_unit_price
-                                            ,adassi_total,adassi_location,adassi_date
-                                            ,adassi_status,adassi_supplier_name,adassi_inv_ref
-                                            ,adassi_contact,adassi_war_peri,adassi_war_con
-                                            ,adassi_insepection,adassi_asset_name,adassi_note
-                                            ,adassi_qty,adassi_mou,adassi_file,adassi_created_date,material_id)
-                                            VALUES ('$v_img_name','$v_asset_no','$v_asset_pano_ref','$v_asset_category'
+                                             ,adassi_code_id,adassi_type,adassi_unit_price
+                                             ,adassi_total,adassi_location,adassi_date
+                                             ,adassi_status,adassi_supplier_name,adassi_inv_ref
+                                             ,adassi_contact,adassi_war_peri,adassi_war_con
+                                             ,adassi_insepection,adassi_asset_name,adassi_note
+                                             ,adassi_qty,adassi_mou,adassi_file,adassi_created_date)
+                                             VALUES ('$v_img_name','$v_asset_no','$v_asset_pano_ref','$v_asset_category'
                                                 ,'$v_asset_code','$v_asset_type','$v_asset_unit_price'
                                                 ,'$v_asset_total_amount','$v_asset_location','$v_asset_start_date'
                                                 ,'$v_asset_status','$v_asset_supplier_name','$v_asset_inv_no_ref'
                                                 ,'$v_asset_contact','$v_asset_WarrantyPeriod','$v_asset_Warranty_Condition'
                                                 ,'$v_asset_Inspection','$v_asset_name','$v_asset_comment'
-                                                ,'$v_asset_qty','$v_asset_mou','$new_name',NOW(),'$v_material_id')";
+                                                ,'$v_asset_qty','$v_asset_mou','$new_name',NOW())";
    $result = mysqli_query($connect, $sql_insert);
+   
    if (!empty($_POST['asset_material']) || !empty($_POST['asset_remark'])) {
+      $last_index = "SELECT max(adassi_id) FROM admin_asset_in";
+      $query = $connect->query($last_index);
+      $get_last_index = $query->fetch_column();
       for ($a = 0; $a < count($_POST['asset_material']); $a++) {
          $sql_m = "INSERT INTO admin_asset_in_material(
                                                          adasim_name
@@ -81,7 +86,7 @@ if (isset($_POST['btnadd'])) {
                                                          '" . $_POST['asset_material'][$a] . "'
                                                          ,'" . $_POST['asset_qty_insert'][$a] . "'
                                                          ,'" . $_POST['asset_in_mou'][$a] . "'
-                                                         ,'" . $v_material_id . "'
+                                                         ,'$get_last_index'
                                                          ,'" . $_POST['asset_remark'][$a] . "'
                                                       )";
          mysqli_query($connect, $sql_m);
@@ -271,10 +276,6 @@ if (isset($_POST['btnUdate'])) {
                                           <input class="form-control" type="text" name="asset_location" id="asset_location">
                                        </div>
                                     </div>
-                                    <div class="form-group col-md-12">
-                                       <label for="material_id">Material ID</label>
-                                       <input required type="number" name="material_id" class="form-control" id="material_id">
-                                    </div>
                                  </div>
                                  <div class="col-md-4">
                                     <div class="col-md-12">
@@ -397,7 +398,7 @@ if (isset($_POST['btnUdate'])) {
                                     </div>
                                     <div class=" col-md-12">
                                        <label for="asset_attach_file">Attach Inv.No:</label>
-                                       <input class="form-control" required type="file" accept=".pdf" name="asset_attach_file" id="asset_attach_file" onchange="loadFile(event);">
+                                       <input class="form-control" type="file" accept=".pdf" name="asset_attach_file" id="asset_attach_file">
                                     </div>
                                     <div class=" col-md-12">
                                        <label for="asset_unit_price">Unit Price:</label>
@@ -863,7 +864,7 @@ if (isset($_POST['btnUdate'])) {
                                                                         LEFT JOIN text_asset_code_creation_type ON text_asset_code_creation_type.acct_id = admin_asset_in.adassi_type
                                                                         left join asset_requisiton on asset_requisiton.as_id = admin_asset_in.adassi_ref
                                                                         left join text_asset_in_status on text_asset_in_status.ais_id = admin_asset_in.adassi_status
-                                                                        left join admin_asset_in_material on admin_asset_in_material.adasim_id = admin_asset_in.material_id";
+                                                                        left join admin_asset_in_material on admin_asset_in_material.adasim_id = admin_asset_in.admin_asset_in_material";
                                  $result_query = $connect->query($sql_query);
                                  $i = 1;
                                  while ($row = $result_query->fetch_assoc()) {
@@ -903,7 +904,7 @@ if (isset($_POST['btnUdate'])) {
                                                                                           echo '/upload/asset_in/' . $v_asset_img;
                                                                                        } else {
                                                                                           echo '/no_image.jpg';
-                                                                                       } ?>" ismap style="width:100px; height:100px;" />
+                                                                                       } ?>" ismap style="width:70px; height:70px;" />
                                           </a>
                                           <a style="float:right; cursor:pointer;" onclick="doImage(<?php echo $row['adassi_id']; ?>,
                                                       '<?php echo $v_asset_img; ?>')" data-toggle="modal" data-target="#myModal_image">
@@ -928,7 +929,7 @@ if (isset($_POST['btnUdate'])) {
                                           ?>
                                        </td>
                                        <td class="text-center" style="vertical-align: middle;">
-                                          <a style="color: white;" class="btn btn-sm btn-info" href="admin_asset_in_view.php?id=<?= $row['adassi_id'] ?>&&material_id=<?= $row['material_id']; ?>"><i class="fa fa-eye"></i></a>
+                                          <a style="color: white;" class="btn btn-sm btn-info" href="admin_asset_in_view.php?id=<?= $row['adassi_id'] ?>"><i class="fa fa-eye"></i></a>
                                           <a onclick="DoUpdate('<?php echo $row['adassi_id']; ?>',
                                                                '<?php echo $row['adassi_no']; ?>',
                                                                '<?php echo $row['adassi_date']; ?>',

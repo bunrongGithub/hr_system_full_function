@@ -25,7 +25,6 @@ if (isset($_POST['btnadd'])) {
    $v_asset_reason = $_POST['asset_reason'];
    $v_qty = $_POST['qty'];
    $v_img_name = '';
-   $v_material_id = $_POST['material_id'];
    if (!empty($v_image)) {
       $v_img_name = date("Ymd") . '_' . basename($_FILES['asset_image']['name']);
       $v_img_fullname = $file_dir . date("Ymd") . "_" . basename($_FILES['asset_image']['name']);
@@ -47,7 +46,6 @@ if (isset($_POST['btnadd'])) {
                                           ,adassb_reason
                                           ,adassb_created_date
                                           ,adassb_qty
-                                          ,adssb_material_id
                                           ) VALUES (
                                              '$v_img_name'
                                              ,'$v_code'
@@ -65,28 +63,34 @@ if (isset($_POST['btnadd'])) {
                                              ,'$v_asset_reason'
                                              ,NOW()
                                              ,'$v_qty'
-                                             ,'$v_material_id'
                                              )";
-   $result = mysqli_query($connect, $sql);
-   if(!empty($_POST['asset_material']) || !empty($_POST['asset_in_mou'])){
-      for ($a = 0; $a < count($_POST['asset_material']); $a++) {
-      $sql_m = "INSERT INTO admin_asset_broken_material(
+   mysqli_query($connect, $sql);
+   $last_index_query = "SELECT max(adassb_id) FROM admin_asset_broken";
+   $last_index_result = mysqli_query($connect, $last_index_query);
+   $last_index_row = mysqli_fetch_assoc($last_index_result);
+   if ($last_index_row) {
+      $get_last_index = $last_index_row['max(adassb_id)'];
+      if (!empty($_POST['asset_material']) || !empty($_POST['asset_in_mou'])) {
+         for ($a = 0; $a < count($_POST['asset_material']); $a++) {
+            $sql_m = "INSERT INTO admin_asset_broken_material(
                                                          adsbm_material_name
                                                          ,adsbm_qty
                                                          ,adsbm_mou
                                                          ,adssbm_material_id
+                                                         ,adssbm_remark
                                                       )VALUES(
-                                                         '".$_POST['asset_material'][$a]."'
-                                                         ,'".$_POST['asset_qty_insert'][$a]."'
-                                                         ,'".$_POST['asset_in_mou'][$a]."'
-                                                         ,'".$v_material_id."'
+                                                         '" . $_POST['asset_material'][$a] . "'
+                                                         ,'" . $_POST['asset_qty_insert'][$a] . "'
+                                                         ,'" . $_POST['asset_in_mou'][$a] . "'
+                                                         ,'$get_last_index'
+                                                         ,'".$_POST['asset_remark'][$a]."'
                                                       )";
-      mysqli_query($connect, $sql_m);
+            mysqli_query($connect, $sql_m);
+         }
+      }
+      header('location:admin_asset_broken.php?message=success');
+      exit();
    }
-   header('location:admin_asset_broken.php?message=success');
-   exit();
-   }
-   
 }
 if (isset($_POST['btnimage'])) {
    $id = $_POST['asset_photo'];
@@ -142,11 +146,8 @@ if (isset($_POST['btn_update'])) {
 
 if (isset($_GET['id'])) {
    $id = $_GET['id'];
-   $id_m = $_GET['id_material'];
    $sql = "DELETE FROM admin_asset_broken WHERE adassb_id = $id";
-   $sql_m = "DELETE FROM admin_asset_broken_material where adssbm_material_id = $id_m";
    $result = mysqli_query($connect, $sql);
-   $result = mysqli_query($connect, $sql_m);
    header('location:admin_asset_broken.php?message=delete');
    exit();
 }
@@ -244,10 +245,6 @@ if (isset($_GET['id'])) {
                                     <img src="../img/no_image.jpg" id="show_photo" class="rounded img-thumbnail img-fuild" height="900px;" alt="..." />
                                  </figure>
                                  <input class="form-control" type="file" name="asset_image" id="asset_image" accept="image/*" onchange="show_photo_pre_add(event);">
-                                 <div class="form-group col-md-12">
-                                    <label for="material_id">Material ID</label>
-                                    <input required type="number" name="material_id" class="form-control" id="material_id">
-                                 </div>
                               </div>
                               <div class="form-group col-md-8">
                                  <div class="col-md-12">
@@ -628,16 +625,13 @@ if (isset($_GET['id'])) {
                                                                   echo '/no_image.jpg';
                                                                } ?>" ismap style="width:80px; height:80px;" alt="">
                                           </a>
-                                          <a style="float:right; cursor:pointer;"
-                                             onclick="doImage('<?php echo $row['adassb_id']; ?>'
+                                          <a style="float:right; cursor:pointer;" onclick="doImage('<?php echo $row['adassb_id']; ?>'
                                                                   ,'<?php echo $row['adassb_img']; ?>'
-                                                            );" 
-                                             data-toggle="modal" data-target="#modal_image" href="#"><i style="color:#3c8dbc;" class="fa fa-pencil"></i>
+                                                            );" data-toggle="modal" data-target="#modal_image" href="#"><i style="color:#3c8dbc;" class="fa fa-pencil"></i>
                                           </a>
                                        </td>
                                        <td class="text-center" style="vertical-align: middle; width:150px">
-                                          <a class="btn btn-sm btn-primary" href="#" data-toggle="modal" data-target="#modal_update" 
-                                          onclick="doUpdate(
+                                          <a class="btn btn-sm btn-primary" href="#" data-toggle="modal" data-target="#modal_update" onclick="doUpdate(
                                                 '<?php echo $row['adassb_id']; ?>',
                                                 '<?php echo $row['adassb_code']; ?>',
                                                 '<?php echo $row['adassb_broken_no']; ?>',
@@ -653,12 +647,11 @@ if (isset($_GET['id'])) {
                                                 '<?php echo $row['adassb_total']; ?>',
                                                 '<?php echo $row['adassb_status']; ?>',
                                                 '<?php echo $row['adassb_reason']; ?>',
-                                             );"
-                                             >
+                                             );">
                                              <i class="fa fa-edit"></i>
                                           </a>
-                                          <a class="btn btn-sm btn-info" href="admin_asset_broken_view.php?view_id=<?= $row['adassb_id'];?>&&view_code=<?=$row['adssb_material_id']?>"><i class="fa fa-eye"></i></a>
-                                          <a style="color: white;" class="btn-sm btn-danger btn" onclick="return confirm('Are you sure to delete?');" href="admin_asset_broken.php?id=<?= $row['adassb_id'] ?>&&id_material=<?=$row['adssb_material_id'];?>"><i class="fa fa-trash"></i></a>
+                                          <a class="btn btn-sm btn-info" href="admin_asset_broken_view.php?view_id=<?= $row['adassb_id']; ?>"><i class="fa fa-eye"></i></a>
+                                          <a style="color: white;" class="btn-sm btn-danger btn" onclick="return confirm('Are you sure to delete?');" href="admin_asset_broken.php?id=<?= $row['adassb_id'] ?>"><i class="fa fa-trash"></i></a>
                                        </td>
 
                                     </tr>
@@ -734,13 +727,14 @@ if (isset($_GET['id'])) {
                no++;
                $("#asset_table").on('click', '.remove-row', function() {
                   $(this).closest("tr").remove();
-                  if($('#asset_table')){
-                     no=1;
+                  if ($('#asset_table')) {
+                     no = 1;
                   }
                });
             });
          });
       });
+
       function doImage(id, photo) {
          $('#asset_photo').val(id);
          var empty_dir = '../img/no_image.jpg';
@@ -765,6 +759,7 @@ if (isset($_GET['id'])) {
             document.getElementById("show_photo").src = src;
          }
       }
+
       function doUpdate(id, e_asset_code, e_broken_no, e_asset_type, e_broken_date, e_asset_name, broken_by_whom, e_asset_categroy, e_start_date, QTY, MOU, e_unit_price, e_total, e_status, e_resaon) {
          $("#edit_id").val(id);
          $("#edit_asset_code").val(e_asset_code).change();

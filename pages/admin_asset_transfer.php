@@ -1,144 +1,112 @@
 <?php
-include '../config/db_connect.php';
-date_default_timezone_set("Asia/Bangkok");
-$datetime = date('Y-m-d H:i:s');
-$yeardate = date('Y-m-d');
-$user_id = $_SESSION['user_id'];
-$username = $_SESSION['username'];
+require './function.php';
 $targetDir = '../img/upload/asset_transfer/';
-if (isset($_POST['btnadd'])) {
-   $v_asset_code = $_POST['asset_code'];
-   $v_asset_transfer_no = $_POST['asset_transfer_no'];
-   $v_asset_name = $_POST['asset_name'];
-   $v_asset_transfer_to = $_POST['asset_transfer_to'];
-   $v_asset_category = $_POST['asset_category'];
-   $v_transfer_date = $_POST['transfer_date'];
-   $v_asset_qty = $_POST['asset_qty'];
-   $v_asset_in_mou = $_POST['asset_in_mou'];
-   $v_asset_unit_price = $_POST['asset_unit_price'];
-   $v_asset_reason = $_POST['asset_reason'];
-   $v_asset_unit_amount = $_POST['asset_unit_amount'];
-   $v_status = $_POST['asset_status'];
-   $v_material_id = $_POST['material_id'];
-   $v_type = $_POST['asset_type'];
-   $v_start_date = $_POST['start_date'];
-   $v_transfer_from = $_POST['asset_transfer_from'];
-   $adasst_img = '';
+
+if (request('btnadd')) {
+   ///////////////// IMAGE////////////////
    if (!empty($_FILES['asset_image']['name'])) {
       $adasst_img = date("Ymd") . "_" . basename($_FILES['asset_image']['name']);
       $v_filefullname = $targetDir . date("Ymd") . "_" . basename($_FILES['asset_image']['name']);
       move_uploaded_file($_FILES['asset_image']['tmp_name'], $v_filefullname);
    }
-   $sql = "INSERT INTO admin_asset_transfer (adasst_img
-                                          ,adasst_type
-                                          ,adasst_date
-                                          ,adasst_material_id
-                                          ,adasst_code
-                                          ,adasst_transfer_no
-                                          ,adasst_asset_name
-                                          ,adasst_transfer_to
-                                          ,adasst_category
-                                          ,adasst_transfer_date
-                                          ,adasst_qty
-                                          ,adasst_mou
-                                          ,adasst_unit_price
-                                          ,adasst_reason
-                                          ,adasst_total
-                                          ,adasst_status
-                                          ,adasst_created_date
-                                          ,adasst_transfer_form
-                                          ) 
-                        VALUES (
-                           '$adasst_img'
-                           ,'$v_type'
-                           ,'$v_start_date'
-                           ,'$v_material_id'
-                           ,'$v_asset_code'
-                           ,'$v_asset_transfer_no'
-                           ,'$v_asset_name'
-                           ,'$v_asset_transfer_to'
-                           ,'$v_asset_category'
-                           ,'$v_transfer_date'
-                           ,'$v_asset_qty'
-                           ,'$v_asset_in_mou'
-                           ,'$v_asset_unit_price'
-                           ,'$v_asset_reason'
-                           ,'$v_asset_unit_amount'
-                           ,'$v_status'
-                           ,NOW()
-                           ,'$v_transfer_from'
-                        )";
+   $data = [
+      'adasst_img' => $adasst_img ?? null,
+      'adasst_type' => $_POST['asset_type'],
+      'adasst_date' => $_POST['start_date'],
+      'adasst_code' => $_POST['asset_code'],
+      'adasst_transfer_no' => $_POST['asset_transfer_no'],
+      'adasst_asset_name' => $_POST['asset_name'],
+      'adasst_company_transfer_to' => $_POST['asset_transfer_to'],
+      'adasst_category' => $_POST['asset_category'],
+      'adasst_transfer_date' => $_POST['transfer_date'],
+      'adasst_qty' => $_POST['asset_qty'],
+      'adasst_mou' => $_POST['asset_in_mou'],
+      'adasst_unit_price' => $_POST['asset_unit_price'],
+      'adasst_reason' => $_POST['asset_reason'],
+      'adasst_total' => $_POST['asset_unit_amount'],
+      'adasst_status' => $_POST['asset_status'],
+      'adasst_created_date' => $datetime,
+      'adasst_company_transfer_from' => $_POST['asset_transfer_from'],
+      'adasst_branch_tf_to' => $_POST['branch_transfer_to'],
+      'adasst_branch_tf_from' => $_POST['branch_transfer_from']
+   ];
+   $insert = insert($data, 'admin_asset_transfer', $connect);
+   if ($insert) {
+      ///////////// get id from last update ////////////////// 
+      $last_index_query = "SELECT max(adasst_id) as max_id FROM admin_asset_transfer";
+      $last_index_result = mysqli_query($connect, $last_index_query);
+      $last_index_row = mysqli_fetch_assoc($last_index_result);
 
-   $result = mysqli_query($connect, $sql);
-   if (!empty($_POST['asset_material']) || !empty($_POST['asset_qty_insert'])) {
-      for ($a = 0; $a < count($_POST['asset_material']); $a++) {
-         $sql_m = "INSERT INTO admin_asset_transfer_material(
-                                                         adasstm_name
-                                                         ,adasstm_qty
-                                                         ,adasstm_mou
-                                                         ,adasstm_materail_id
-                                                         ,adasstm_remark
-                                                         ,adasstm_create_at
-                                                      )VALUES(
-                                                         '" . $_POST['asset_material'][$a] . "'
-                                                         ,'" . $_POST['asset_qty_insert'][$a] . "'
-                                                         ,'" . $_POST['asset_in_mou'][$a] . "'
-                                                         ,'" . $v_material_id . "'
-                                                         ,'" . $_POST['asset_remark'][$a] . "'
-                                                         ,'$datetime'
-                                                      )";
-         mysqli_query($connect, $sql_m);
+      if ($last_index_row) {
+         $get_last_index = $last_index_row['max_id'];
+         if (!empty($_POST['asset_material']) || !empty($_POST['asset_qty_insert'])) {
+            for ($a = 0; $a < count($_POST['asset_material']); $a++) {
+               $sql_m = "INSERT INTO admin_asset_transfer_material(
+                                                                              adasstm_name
+                                                                              ,adasstm_qty
+                                                                              ,adasstm_mou
+                                                                              ,adasstm_materail_id
+                                                                              ,adasstm_remark
+                                                                              ,adasstm_create_at
+                                                                           )VALUES(
+                                                                              '" . $_POST['asset_material'][$a] . "'
+                                                                              ,'" . $_POST['asset_qty_insert'][$a] . "'
+                                                                              ,'" . $_POST['asset_in_mou'][$a] . "'
+                                                                              ,'$get_last_index'
+                                                                              ,'" . $_POST['asset_remark'][$a] . "'
+                                                                              ,'$datetime'
+                                                                           )";
+               mysqli_query($connect, $sql_m);
+            }
+         }
       }
    }
-   header('location:admin_asset_transfer.php?message=success');
-   exit();
+   $insert ? redirect('success', 'admin_asset_transfer') : redirect('notsuccess', 'admin_asset_transfer');
 }
 
-if (isset($_POST['btnUpdate'])) {
-   $id = $_POST['edit_asset_id'];
-   $v_edit_asset_code = $_POST['edit_asset_code'];
-   $v_edit_asset_type = $_POST['edit_asset_type'];
-   $v_edit_transfer_no = $_POST['edit_transfer_no'];
-   $v_edit_transfer_to = $_POST['edit_transfer_to'];
-   $v_edit_asset_category = $_POST['edit_asset_category'];
-   $v_edit_asset_status = $_POST['edit_asset_status'];
-   $v_edit_asset_name = $_POST['edit_asset_name'];
-   $v_edit_qty = $_POST['edit_qty'];
-   $v_edit_unit_price = $_POST['edit_unit_price'];
-   $v_edit_start_date = $_POST['edit_start_date'];
-   $v_edit_transfer_date = $_POST['edit_transfer_date'];
-   $v_edit_total_amount = $_POST['edit_total_amount'];
-   $v_edit_mou = $_POST['edit_mou'];
-   $v_edit_reason = $_POST['edit_reason'];
-   $v_edit_transfer_from = $_POST['edit_transfer_from']; 
+////////////////// update ////////////////// 
 
-   $sql = "UPDATE admin_asset_transfer SET adasst_code='$v_edit_asset_code'
-                                          ,adasst_type='$v_edit_asset_type'
-                                          ,adasst_transfer_no = '$v_edit_transfer_no'
-                                          ,adasst_transfer_to='$v_edit_transfer_to'
-                                          ,adasst_category='$v_edit_asset_category'
-                                          ,adasst_status='$v_edit_asset_status'
-                                          ,adasst_asset_name = '$v_edit_asset_name'
-                                          ,adasst_qty = '$v_edit_qty'
-                                          ,adasst_unit_price = '$v_edit_unit_price'
-                                          ,adasst_date='$v_edit_start_date'
-                                          ,adasst_transfer_date='$v_edit_transfer_date'
-                                          ,adasst_total='$v_edit_total_amount'
-                                          ,adasst_mou='$v_edit_mou'
-                                          ,adasst_reason = '$v_edit_reason'
-                                          ,adasst_updated_date=NOW()
-                                          ,adasst_transfer_form='$v_edit_transfer_from'
-                                           where adasst_id = '$id'";
-   $result = mysqli_query($connect, $sql);
-   header('location:admin_asset_transfer.php?message=update');
-   exit();
+if (request('btnUpdate')) {
+
+   $data = [
+      'adasst_id'=> $_POST['edit_asset_id'],
+      'adasst_type' => $_POST['edit_asset_type'],
+      'adasst_date' => $_POST['edit_start_date'],
+      'adasst_code' => $_POST['edit_asset_code'],
+      'adasst_transfer_no' => $_POST['edit_transfer_no'],
+      'adasst_asset_name' => $_POST['edit_asset_name'],
+      'adasst_company_transfer_to' => $_POST['edit_transfer_to'],
+      'adasst_company_transfer_from' => $_POST['edit_transfer_from'],
+      'adasst_category' => $_POST['edit_asset_category'],
+      'adasst_transfer_date' => $_POST['edit_transfer_date'],
+      'adasst_qty' => $_POST['edit_qty'],
+      'adasst_mou' => $_POST['edit_mou'],
+      'adasst_unit_price' => $_POST['edit_unit_price'],
+      'adasst_reason' => $_POST['edit_reason'],
+      'adasst_total' => $_POST['edit_total_amount'],
+      'adasst_status' => $_POST['edit_asset_status'],
+      'adasst_updated_date' => $datetime,
+      'adasst_branch_tf_to'=>$_POST['edit_branch_transfer_to'],
+      'adasst_branch_tf_from'=>$_POST['edit_branch_transfer_from'],
+   ];
+   $updates = $update('admin_asset_transfer',$data,'adasst_id',$data['adasst_id'],$connect);
+   $updates ? 
+      redirect('update','admin_asset_transfer')
+      :
+      "";
 }
 
-if (isset($_GET['id'])) {
-   $id = $_GET['id'];
-   $sql = "DELETE FROM admin_asset_transfer WHERE adasst_id = $id";
-   $result = mysqli_query($connect, $sql);
+///////////// DELETE////////////// 
+
+if (get_req('id')) {
+   $deletes = $delete('id', 'admin_asset_transfer', 'adasst_id', $connect);
+   $deletes ? redirect('delete', 'admin_asset_transfer') : '';
 }
+
+
+//////////////// IMG UPDATE ////////////// 
+
+
 if (isset($_POST['btnimage'])) {
    $id = $_POST['asset_photo'];
    if (!empty($_FILES['edit_photo']['name'])) {
@@ -220,6 +188,24 @@ if (isset($_POST['btnimage'])) {
                echo '<h4>Success Delete Data</h4>';
                echo '</div>';
             }
+            if (!empty($_GET['message']) && $_GET['message'] == 'validate') {
+               echo '<div class="alert alert-danger">';
+               echo '<button type="button" class="close" data-dismiss="alert">&times;</button>';
+               echo '<h4>All field are require!</h4>';
+               echo '</div>';
+            }
+            if (!empty($_GET['message']) && $_GET['message'] == 'validate_img') {
+               echo '<div class="alert alert-danger">';
+               echo '<button type="button" class="close" data-dismiss="alert">&times;</button>';
+               echo '<h4>Please select the images before submited!</h4>';
+               echo '</div>';
+            }
+            if (!empty($_GET['message']) && $_GET['message'] == 'notsuccess') {
+               echo '<div class="alert alert-danger">';
+               echo '<button type="button" class="close" data-dismiss="alert">&times;</button>';
+               echo '<h4>Fall updated!</h4>';
+               echo '</div>';
+            }
             ?>
          </div>
          <section class="content-header">
@@ -243,13 +229,10 @@ if (isset($_POST['btnimage'])) {
                                  <div class="form-group col-md-4">
                                     <label style="font-size: 20px;" for="">Asset Photo</label>
                                     <figure class="figure">
-                                       <img src="../img/no_image.jpg"required id="show_photo" class="rounded img-thumbnail img-fuild" height="900px;" alt="..." />
+                                       <img src="../img/no_image.jpg" required id="show_photo" class="rounded img-thumbnail img-fuild" height="900px;" alt="..." />
                                     </figure>
                                     <input class="form-control" type="file" name="asset_image" id="asset_image" accept="image/*" onchange="show_photo_pre(event);">
-                                    <div class="form-group col-md-12">
-                                       <label for="material_id">Material ID:</label>
-                                       <input type="number" required name="material_id" class="form-control" id="material_id">
-                                    </div>
+
                                  </div>
                                  <div class="form-group col-md-8">
                                     <div class="form-group-col-md-12">
@@ -269,16 +252,56 @@ if (isset($_POST['btnimage'])) {
                                        </select>
                                     </div>
                                     <div class="col-md-6 form-group">
-                                       <label for="asset_transfer_no"required class="form-label">Transfer No:</label>
+                                       <label for="asset_transfer_no" required class="form-label">Transfer No:</label>
                                        <input type="text" name="asset_transfer_no" id="asset_transfer_no" class="form-control">
                                     </div>
                                     <div class="col-md-6 form-group">
-                                       <label for="asset_transfer_from"required class="form-label">Transfer From:</label>
-                                       <input type="text" name="asset_transfer_to" id="asset_transfer_to" class="form-control">
+                                       <label for="asset_transfer_from" required class="form-label">Company Transfer From:</label>
+                                       <select type="text" name="asset_transfer_from" id="asset_transfer_from" class="form-control">
+                                          <?php
+                                          $sql = "select * from company";
+                                          $result = $connect->query($sql);
+                                          while ($row = mysqli_fetch_assoc($result)) {
+                                             echo '<option value=' . $row['c_id'] . '>' . $row['c_name_kh'] . '</option>';
+                                          }
+                                          ?>
+                                       </select>
                                     </div>
                                     <div class="col-md-6 form-group">
-                                       <label for="asset_transfer_to" class="form-label">Transfer To:</label>
-                                       <input type="text" name="asset_transfer_from" id="asset_transfer_from" class="form-control">
+                                       <label for="asset_transfer_to" class="form-label">Company Transfer To:</label>
+                                       <select type="text" name="asset_transfer_to" id="asset_transfer_to" class="form-control">
+                                          <?php
+                                          $sql = "select * from company";
+                                          $result = $connect->query($sql);
+                                          while ($row = mysqli_fetch_assoc($result)) {
+                                             echo '<option value=' . $row['c_id'] . '>' . $row['c_name_kh'] . '</option>';
+                                          }
+                                          ?>
+                                       </select>
+                                    </div>
+                                    <div class="col-md-6 form-group">
+                                       <label for="asset_transfer_from" required class="form-label">Branch Transfer From:</label>
+                                       <select type="text" name="branch_transfer_from" id="branch_transfer_from" class="form-control">
+                                          <?php
+                                          $sql = "select * from user_branch";
+                                          $result = $connect->query($sql);
+                                          while ($row = mysqli_fetch_assoc($result)) {
+                                             echo '<option value=' . $row['ub_id'] . '>' . $row['ub_name'] . '</option>';
+                                          }
+                                          ?>
+                                       </select>
+                                    </div>
+                                    <div class="col-md-6 form-group">
+                                       <label for="branch_transfer_to" class="form-label">Branch Transfer To:</label>
+                                       <select type="text" name="branch_transfer_to" id="branch_transfer_to" class="form-control">
+                                          <?php
+                                          $sql = "select * from user_branch";
+                                          $result = $connect->query($sql);
+                                          while ($row = mysqli_fetch_assoc($result)) {
+                                             echo '<option value=' . $row['ub_id'] . '>' . $row['ub_name'] . '</option>';
+                                          }
+                                          ?>
+                                       </select>
                                     </div>
                                     <div class="col-md-6 form-group">
                                        <label for="start_date" class="form-label">Start Date:</label>
@@ -447,13 +470,53 @@ if (isset($_POST['btnimage'])) {
                                        <label for="">Transfer No:</label>
                                        <input type="text" name="edit_transfer_no" id="edit_transfer_no" class="form-control">
                                     </div>
-                                    <div class="form-group col-md-6">
-                                       <label for="">Transfer From:</label>
-                                       <input type="text" name="edit_transfer_from" id="edit_transfer_from" class="form-control">
+                                    <div class="col-md-6 form-group">
+                                       <label for="asset_transfer_from" required class="form-label">Company Transfer From:</label>
+                                       <select type="text" name="edit_transfer_from" id="edit_transfer_from" class="form-control">
+                                          <?php
+                                          $sql = "select * from company";
+                                          $result = $connect->query($sql);
+                                          while ($row = mysqli_fetch_assoc($result)) {
+                                             echo '<option value=' . $row['c_id'] . '>' . $row['c_name_kh'] . '</option>';
+                                          }
+                                          ?>
+                                       </select>
                                     </div>
-                                    <div class="form-group col-md-6">
-                                       <label for="">Transfer To:</label>
-                                       <input type="text" name="edit_transfer_to" id="edit_transfer_to" class="form-control">
+                                    <div class="col-md-6 form-group">
+                                       <label for="asset_transfer_to" class="form-label">Company Transfer To:</label>
+                                       <select type="text" name="edit_transfer_to" id="edit_transfer_to" class="form-control">
+                                          <?php
+                                          $sql = "select * from company";
+                                          $result = $connect->query($sql);
+                                          while ($row = mysqli_fetch_assoc($result)) {
+                                             echo '<option value=' . $row['c_id'] . '>' . $row['c_name_kh'] . '</option>';
+                                          }
+                                          ?>
+                                       </select>
+                                    </div>
+                                    <div class="col-md-6 form-group">
+                                       <label for="asset_transfer_from" required class="form-label">Branch Transfer From:</label>
+                                       <select type="text" name="edit_branch_transfer_from" id="edit_branch_transfer_from" class="form-control">
+                                          <?php
+                                          $sql = "select * from user_branch";
+                                          $result = $connect->query($sql);
+                                          while ($row = mysqli_fetch_assoc($result)) {
+                                             echo '<option value=' . $row['ub_id'] . '>' . $row['ub_name'] . '</option>';
+                                          }
+                                          ?>
+                                       </select>
+                                    </div>
+                                    <div class="col-md-6 form-group">
+                                       <label for="branch_transfer_to" class="form-label">Branch Transfer To:</label>
+                                       <select type="text" name="edit_branch_transfer_to" id="edit_branch_transfer_to" class="form-control">
+                                          <?php
+                                          $sql = "select * from user_branch";
+                                          $result = $connect->query($sql);
+                                          while ($row = mysqli_fetch_assoc($result)) {
+                                             echo '<option value=' . $row['ub_id'] . '>' . $row['ub_name'] . '</option>';
+                                          }
+                                          ?>
+                                       </select>
                                     </div>
                                     <div class="form-group col-md-6">
                                        <label for="">Asset Category:</label>
@@ -598,7 +661,8 @@ if (isset($_POST['btnimage'])) {
                                  $sql = "SELECT * FROM admin_asset_transfer A LEFT JOIN assest_code_creation B ON B.ac_id = A.adasst_code
                                                                            LEFT JOIN text_asset_code_creation_type C ON C.acct_id = A.adasst_type
                                                                            LEFT JOIN text_asset_in_status D ON D.ais_id = A.adasst_status
-                                                                           LEFT JOIN admin_asset_transfer_material E ON E.adasstm_id = A.adasst_material_id";
+                                                                        
+                                                                           ";
                                  $result = mysqli_query($connect, $sql);
                                  $i = 1;
                                  while ($row = mysqli_fetch_assoc($result)) {
@@ -611,7 +675,7 @@ if (isset($_POST['btnimage'])) {
                                     $v_unit_price = $row['adasst_unit_price'];
                                     $v_total_amount = $row['adasst_total'];
                                     $v_transfer_no = $row['adasst_transfer_no'];
-                                    $v_transfer_to = $row['adasst_transfer_to'];
+                                    $v_transfer_to = $row['adasst_company_transfer_to'];
                                     $v_transfer_date = $row['adasst_transfer_date'];
                                     $v_asset_status = $row['ais_name'];
                                     $v_asset_img = $row['adasst_img'];
@@ -636,7 +700,15 @@ if (isset($_POST['btnimage'])) {
                                        <td class="text-center" style="vertical-align: middle;"><?= number_format($v_unit_price) . '$'; ?></td>
                                        <td class="text-center" style="vertical-align: middle;"><?= number_format($v_total_amount) . '$' ?></td>
                                        <td class="text-center" style="vertical-align: middle;"><?= $v_transfer_no; ?></td>
-                                       <td class="text-center" style="vertical-align: middle;"><?= $v_transfer_to; ?></td>
+                                       <td class="text-center" style="vertical-align: middle;"><?php
+                                                                                                if ($v_transfer_to != 0) {
+                                                                                                   $sql = "select * from company where c_id = $v_transfer_to";
+                                                                                                   $stmt = $connect->query($sql);
+                                                                                                   $stms_row = $stmt->fetch_assoc();
+                                                                                                   echo $stms_row['c_name_kh'];
+                                                                                                }
+                                                                                                ?>
+                                       </td>
                                        <td class="text-center" style="vertical-align: middle;"><?= $v_transfer_date; ?></td>
                                        <td class="text-center" style="vertical-align: middle;"><?= $v_asset_status; ?></td>
                                        <td class="text-center" style="vertical-align: middle;">
@@ -645,7 +717,7 @@ if (isset($_POST['btnimage'])) {
                                                                                           echo '/upload/asset_transfer/' . $v_asset_img;
                                                                                        } else {
                                                                                           echo '/no_image.jpg';
-                                                                                       } ?>" ismap style="width:80px; height:80px;" />
+                                                                                       } ?>" ismap style="width:60px; height:60px;" />
                                           </a>
                                           <a style="float:right; cursor:pointer;" onclick="doImage('<?php echo $row['adasst_id']; ?>',
                                                       '<?php echo $v_asset_img; ?>')" data-toggle="modal" data-target="#modal_image">
@@ -658,7 +730,7 @@ if (isset($_POST['btnimage'])) {
                                              '<?php echo $row['adasst_code'] ?>',
                                              '<?php echo $row['adasst_type'] ?>',
                                              '<?php echo $row['adasst_transfer_no'] ?>',
-                                             '<?php echo $row['adasst_transfer_to'] ?>',
+                                             '<?php echo $row['adasst_company_transfer_to'] ?>',
                                              '<?php echo $row['adasst_category'] ?>',
                                              '<?php echo $row['adasst_status'] ?>',
                                              '<?php echo $row['adasst_qty'] ?>',
@@ -669,9 +741,11 @@ if (isset($_POST['btnimage'])) {
                                              '<?php echo $row['adasst_asset_name'] ?>',
                                              '<?php echo $row['adasst_reason'] ?>',
                                              '<?php echo $row['adasst_mou'] ?>',
-                                             '<?php echo $row['adasst_transfer_form'] ?>',
+                                             '<?php echo $row['adasst_company_transfer_from'] ?>',
+                                             '<?php echo $row['adasst_branch_tf_from'] ?>',
+                                             '<?php echo $row['adasst_branch_tf_to'] ?>',
                                              );" style="color: #fff;" class="btn btn-sm btn-primary" data-toggle="modal" data-target="#modal_update" href="#"><i class="fa fa-edit"></i></a>
-                                          <a style="color: #fff;" class="btn btn-sm btn-info" href="admin_asset_transfer_view.php?id=<?= $row['adasst_id'] ?>&&material_code_id=<?= $row['adasst_material_id'] ?>"><i class="fa fa-eye"></i></a>
+                                          <a style="color: #fff;" class="btn btn-sm btn-info" href="admin_asset_transfer_view.php?id=<?= $row['adasst_id'] ?>"><i class="fa fa-eye"></i></a>
                                           <a style="color: white;" class="btn-sm btn-danger btn" onclick="return confirm('Are you sure to delete?');" href="admin_asset_transfer.php?id=<?= $row['adasst_id'] ?>"><i class="fa fa-trash"></i></a>
                                        </td>
                                     </tr>
@@ -728,7 +802,7 @@ if (isset($_POST['btnimage'])) {
                var material = "<td><input class='form-control'required name='asset_material[]' id='asset_material' type='text'></td>";
                var qty = "<td><input class='form-control'required name='asset_qty_insert[]' id='asset_qty_insert' type='number'></td>";
                var mou = `<td>
-                                 <select class='form-control'required name='asset_in_mou[]' id='asset_in_mou'data-live-search="true">
+                                 <select class='form-control' name='asset_in_mou[]' id='asset_in_mou'data-live-search="true">
                                     <option selected></option>
                                     <?php
                                     $sql = "SELECT * FROM text_asset_in_mou";
@@ -755,12 +829,12 @@ if (isset($_POST['btnimage'])) {
          });
       });
 
-      function doUpdate(id, asset_code, asset_type, transfer_no, transfer_to, category, status, qty, unit_price, total_amount, start_date, transfer_date, asset_name, reason, mou,t_from) {
+      function doUpdate(id, asset_code, asset_type, transfer_no, transfer_to, category, status, qty, unit_price, total_amount, start_date, transfer_date, asset_name, reason, mou, t_from,branch_tf_from,branch_tf_to) {
          $("#edit_asset_id").val(id);
          $("#edit_asset_code").val(asset_code).change();
          $("#edit_asset_type").val(asset_type).change();
          $("#edit_transfer_no").val(transfer_no);
-         $("#edit_transfer_to").val(transfer_to);
+         $("#edit_transfer_to").val(transfer_to).change();
          $("#edit_asset_category").val(category).change();
          $("#edit_asset_status").val(status).change();
          $("#edit_qty").val(qty);
@@ -771,7 +845,9 @@ if (isset($_POST['btnimage'])) {
          $("#edit_asset_name").val(asset_name);
          $("#edit_reason").val(reason);
          $("#edit_mou").val(mou).change();
-         $("#edit_transfer_from").val(t_from)
+         $("#edit_transfer_from").val(t_from).change();
+         $("#edit_branch_transfer_from").val(branch_tf_from).change();
+         $("#edit_branch_transfer_to").val(branch_tf_to).change();
       }
 
       function doImage(id, photo) {

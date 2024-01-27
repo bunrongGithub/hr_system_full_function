@@ -219,7 +219,6 @@ if (isset($_GET["del_id"])) {
                                                    ?>
                                                 </select>
                                              </div>
-                                             
                                              <div class="col-md-12">
                                                 <!-- col_current_info -->
                                                 <div class="col-md-4">
@@ -313,11 +312,15 @@ if (isset($_GET["del_id"])) {
                                                       <select class="form-control" name="cunrrent_status" id="cunrrent_status" data-live-search="true">
                                                          <option disabled selected value="">=== Select ===</option>
                                                          <?php
-                                                         $sql = "SELECT * FROM text_staff_moment_status ORDER BY sms_name ASC";
-                                                         $result = mysqli_query($connect, $sql);
-                                                         while ($row = mysqli_fetch_assoc($result)) {
-                                                            echo '<option value=' . $row['sms_id'] . '>' . $row['sms_name'] . '</option>';
-                                                         }
+                                                            $user_id = $_SESSION['user_id'];
+                                                            $sql = "SELECT * FROM text_staff_moment_status A
+                                                                              LEFT JOIN text_staff_moment_status_user B ON B.smsu_status_id=A.sms_id
+                                                                              WHERE smsu_user_id=$user_id
+                                                                              ORDER BY sms_name ASC";
+                                                            $result = mysqli_query($connect, $sql);
+                                                            while ($row = mysqli_fetch_assoc($result)) {
+                                                               echo '<option value=' . $row['sms_id'] . '>' . $row['sms_name'] . '</option>';
+                                                            }
                                                          ?>
                                                       </select>
                                                    </div>
@@ -446,7 +449,11 @@ if (isset($_GET["del_id"])) {
                                              <label for="new_status">Status:</label>
                                              <select class="form-control" name="new_status" id="new_status" data-live-search="true">
                                                 <?php
-                                                $sql = "SELECT * FROM text_staff_moment_status order by sms_name ASC";
+                                                $user_id = $_SESSION['user_id'];
+                                                $sql = "SELECT * FROM text_staff_moment_status A
+                                                                  LEFT JOIN text_staff_moment_status_user B ON B.smsu_status_id=A.sms_id
+                                                                  WHERE smsu_user_id=$user_id
+                                                                  order by sms_name ASC";
                                                 $result = mysqli_query($connect, $sql);
                                                 while ($row = mysqli_fetch_assoc($result)) {
                                                    echo '<option value="' . $row['sms_id'] . '" >' . $row['sms_name'] . '</option>';
@@ -544,12 +551,14 @@ if (isset($_GET["del_id"])) {
                                     $v_status = $row['sms_name'];
                                     $v_comment_one = $row['sm_comment_en'];
                                     $v_comment_two = $row['sm_comment_kh'];
+
                                  ?>
                                     <tr>
                                        <td class="text-center" style="vertical-align: middle;"><?php echo $v_i; ?></td>
                                        <td class="text-center" style="vertical-align: middle;"><?php echo $v_sm_no; ?></td>
                                        <td class="text-center" style="vertical-align: middle;"><?php echo $v_er_job_id; ?></td>
                                        <td class="text-center" style="vertical-align: middle;"><?php echo  "<i>Name Kh: </i> " . $v_er_name_kh . "<br/><i>Name En: </i> " . $v_er_name_en . "<br/><i>Gender:</i>" . $v_gender_id; ?></td>
+
                                        <td class="text-center" style="vertical-align: middle;"><?php echo "<i>Comapny: </i> " . $v_company_id . "<br/><i>Branch: </i> " . $v_branch_id . "<br/><i>Department: </i> " . $v_department_id . "<br/><i>Position: </i> " . $v_position_id . "<br/><i>Salary: <i/>" . $v_salary . "$" . "<br/><i>Tax Salary: </i>" . $v_tax_salary . "$"; ?></td>
                                        <!-- current_information_employee -->
                                        <td class="text-center" style="vertical-align: middle;">
@@ -586,6 +595,7 @@ if (isset($_GET["del_id"])) {
                                           echo "<br/><i>Salary: </i>" . $v_new_salary . "$";
                                           //tax_salary
                                           echo "<br/><i>Tax Salary: </i>" . $v_new_tax_salary . "$";
+
                                           ?>
                                        </td>
                                        <td class="text-center" style="vertical-align: middle;"><?php echo $v_applied_date; ?></td>
@@ -612,7 +622,8 @@ if (isset($_GET["del_id"])) {
                                                             '<?php echo $v_sm_no; ?>',
                                                          )" data-toggle="modal" data-target="#myModal_update" class="btn btn-primary btn-sm"><i style="color:white;" class="fa fa-edit"></i></a>
                                           <a href="staff_movement_print.php?id=<?php echo $row['sm_id'];?>" style="color: #fff;" class="btn btn-sm btn-info"><i class="fa fa-eye"></i></a>
-                                          <a onclick="return confirm('Are you sure to delete?');" href="staff_movement.php?del_id=<?php echo $row['sm_id']; ?>" class="btn btn-danger btn-sm"><i style="color:white;" class="fa fa-trash "></i></a>
+                                          <a onclick="return confirm('Are you sure to delete ?');" href="staff_movement.php?del_id=<?php echo $row['sm_id']; ?>" class="btn btn-danger btn-sm"><i style="color:white;" class="fa fa-trash "></i></a>
+
                                        </td>
                                     </tr>
                                  <?php

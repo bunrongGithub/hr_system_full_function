@@ -82,6 +82,14 @@ if (isset($_POST['btnUpdate'])) {
    mysqli_query($connect, $sql);
    header('location:stationary_requisition.php?message=update');
    exit();
+
+}
+if(isset($_GET['delete'])){
+   $id = $_GET['delete'];
+   $sql = "DELETE FROM stationary_requisition where sr_id = $id";
+   $result = mysqli_query($connect, $sql);
+   header('location:stationary_requisition.php?message=delete');
+   exit();
 }
 ?>
 
@@ -115,6 +123,7 @@ if (isset($_POST['btnUpdate'])) {
 <link href="../css/style.css" rel="stylesheet" type="text/css" />
 <link href="../css/AdminLTE.css" rel="stylesheet" type="text/css" />
 </head>
+
 <body class="skin-black">
    <?php include('header.php') ?>
    <div class="wrapper row-offcanvas row-offcanvas-left">
@@ -162,7 +171,9 @@ if (isset($_POST['btnUpdate'])) {
                               <div class="row">
                                  <div class="col-md-12">
                                     <div class="form-group col-xs-6">
-                                       <label for="ps_no">PS No:</label>
+                                       <label id="ps_auto_count" for="ps_no">PS No(auto):
+                                          <input type="checkbox" name="" id="">
+                                       </label>
                                        <input class="form-control" type="text" name="ps_no" id="ps_no">
                                     </div>
                                     <div class="form-group col-xs-6">
@@ -330,7 +341,7 @@ if (isset($_POST['btnUpdate'])) {
                                        <a href="" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#modal_view<?= $row['sr_id']; ?>" class="btn btn-info btn-sm"><i class="fa fa-eye"></i></a>
                                        <a href="" onclick="doUpdate(<?= $row['sr_id'] ?>);" data-toggle="modal" data-target="#modalUpdate<?= $row['sr_id']; ?>" class="btn btn-info btn-sm"><i class="fa fa-edit"></i></a>
                                        <a href="stationary_requisition_print.php?Id=<?php echo $row['sr_id'] ?>" class="btn btn-sm btn-success print-button"><i class="fa fa-print"></i></a>
-                                       <a href="" class="btn-sm btn btn-danger"><i class="fa fa-trash"></i></a>
+                                       <a onclick="return confirm('Are you sure delete?')"  href="./stationary_requisition.php?delete=<?php echo $row['sr_id']?>" class="btn-sm btn btn-danger"><i class="fa fa-trash"></i></a>
                                     </td>
                                  </tr>
                                  <!-- modal_view -->
@@ -753,6 +764,19 @@ if (isset($_POST['btnUpdate'])) {
 
    <!-- AdminLTE dashboard demo (This is only for demo purposes) -->
    <script type="text/javascript">
+      $(document).ready(function() {
+         $("#ps_auto_count").on("click", function() {
+            fetch("api_stationary_requisition.php").then(respone => respone.json()).then(phpdata => {
+               console.log(phpdata.ps);
+               const lastnumber = phpdata.ps.match(/\d+$/)[0];
+               const nextNumber  = Number(lastnumber) +1;
+               $("#ps_no").val(`PS:${nextNumber}`);
+            }).catch(error => {
+               console.log("Error fetching PHP data:", error);
+            })
+         });
+      });
+
       function doUpdate(id, name, note) {
          $('#position_id').val(id);
          $('#edit_name').val(name);
@@ -773,19 +797,6 @@ if (isset($_POST['btnUpdate'])) {
       function calTotal() {
          total_amount.value = qty.value * unit_price.value;
       }
-      // function printPage(id) {
-      //    var table = document.createElement("table");
-      //    var row = table.insertRow();
-      //    var cell1 = row.insertCell();
-      //    cell1.textContent = id;
-      //    var tableContainer = document.getElementById("datatable");
-      //    tableContainer.appendChild(table);
-      //    var printWindow = window.open('', '_blank');
-      //    printWindow.open=tableContainer;
-      //    window.print();
-      //    document.getElementById("body").innerHTML;
-      //    var body = document.getElementById("dataPrint").innerHTML;
-      // }
    </script>
 </body>
 

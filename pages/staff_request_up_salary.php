@@ -270,11 +270,15 @@ if (isset($_GET["del_id"])) {
                                                    <select class="form-control" name="status" id="status" data-live-search="true">
                                                       <option disabled selected value="">=== Select ===</option>
                                                       <?php
-                                                      $sql = "SELECT * FROM text_requ_up_salary_status order by tus_name asc";
-                                                      $result = mysqli_query($connect, $sql);
-                                                      while ($row = mysqli_fetch_assoc($result)) {
-                                                         echo '<option value = ' . $row['tus_id'] . ' >' . $row['tus_name'] . '</option>';
-                                                      }
+                                                         $user_id = $_SESSION['user_id'];
+                                                         $sql = "SELECT * FROM text_requ_up_salary_status A
+                                                                           LEFT JOIN text_requ_up_salary_status_user B ON B.russu_status_id=A.tus_id
+                                                                           WHERE russu_user_id=$user_id
+                                                                           order by tus_name asc";
+                                                         $result = mysqli_query($connect, $sql);
+                                                         while ($row = mysqli_fetch_assoc($result)) {
+                                                            echo '<option value = ' . $row['tus_id'] . ' >' . $row['tus_name'] . '</option>';
+                                                         }
                                                       ?>
                                                    </select>
                                                 </div>
@@ -374,11 +378,15 @@ if (isset($_GET["del_id"])) {
                                              <label for="edit_status">Status:</label>
                                              <select class="form-control" name="edit_status" id="edit_status" data-live-search="true">
                                                 <?php
-                                                $sql = "SELECT * FROM text_requ_up_salary_status order by tus_name ASC";
-                                                $result = mysqli_query($connect, $sql);
-                                                while ($row = mysqli_fetch_assoc($result)) {
-                                                   echo '<option value="' . $row['tus_id'] . '" >' . $row['tus_name'] . '</option>';
-                                                }
+                                                   $user_id = $_SESSION['user_id'];
+                                                   $sql = "SELECT * FROM text_requ_up_salary_status A
+                                                                     LEFT JOIN text_requ_up_salary_status_user B ON B.russu_status_id=A.tus_id
+                                                                     WHERE russu_user_id=$user_id
+                                                                     order by tus_name asc";
+                                                   $result = mysqli_query($connect, $sql);
+                                                   while ($row = mysqli_fetch_assoc($result)) {
+                                                      echo '<option value="' . $row['tus_id'] . '" >' . $row['tus_name'] . '</option>';
+                                                   }
                                                 ?>
                                              </select>
                                           </div>
@@ -389,12 +397,14 @@ if (isset($_GET["del_id"])) {
                                     </div>
                                     </form>
                                  </div>
+
                               </div>
                            </div>
                         </div>
                         <!-- Modal Update-->
                         <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#myModal" style="margin-bottom: 2%;">
                            <i class="fa fa-plus-square-o" aria-hidden="true"></i> Add New</button>
+
                         <!-- /.box-header -->
                         <div class="box-body table-responsive">
                            <table id="info_data" class="table table-hover table-bordered table-striped">

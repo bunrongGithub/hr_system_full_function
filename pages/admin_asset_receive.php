@@ -21,7 +21,6 @@ if (isset($_POST["btnadd"])) {
    $v_unit_price = $_POST['txt_unit_price'];
    $v_total = $_POST['txt_total_amount'];
    $v_remark = $_POST['txt_remark'];
-   $v_material_id = $_POST['txt_material_id'];
    $v_status = $_POST['txt_status'];
    if (!empty($_FILES['txt_image']['name'])) {
       /////////////////upload image//////////////////////
@@ -36,7 +35,6 @@ if (isset($_POST["btnadd"])) {
                                        ,adassrt_c_price
                                        ,adassrt_total
                                        ,adassrt_note
-                                       ,adassrt_material_id
                                        ,adassrt_userid
                                        ,adassrt_created_date
                                        ,adassrt_status
@@ -48,16 +46,20 @@ if (isset($_POST["btnadd"])) {
                                              ,'$v_unit_price'
                                              ,'$v_total'
                                              ,'$v_remark'
-                                             ,'$v_material_id'
                                              ,'$user_id'
                                              ,NOW()
                                              ,'$v_status'
                                              ,'$v_imagename');";
-   mysqli_query($connect, $sql);
+   $result = mysqli_query($connect, $sql);
    /**    Material form */
-   if (isset($_POST['asset_material']) || isset($_POST['asset_remark']) || isset($_POST['asset_qty_insert'])) {
-      for ($a = 0; $a < count($_POST['asset_material']); $a++) {
-         $sql_m = "INSERT INTO admin_asset_receive_material(
+   $last_index_query = "SELECT max(adassrt_id) FROM admin_asset_receive";
+   $last_index_result = mysqli_query($connect, $last_index_query);
+   $last_index_row = mysqli_fetch_assoc($last_index_result);
+   if ($last_index_row) {
+      $get_last_index = $last_index_row['max(adassrt_id)'];
+      if (!empty($_POST['asset_material']) || !empty($_POST['asset_remark']) || !empty($_POST['asset_qty_insert'])) {
+         for ($a = 0; $a < count($_POST['asset_material']); $a++) {
+            $sql_m = "INSERT INTO admin_asset_receive_material(
                                                          adassrtm_name
                                                          ,adassrtm_qty
                                                          ,adassrtm_mou
@@ -68,15 +70,16 @@ if (isset($_POST["btnadd"])) {
                                                          '" . $_POST['asset_material'][$a] . "'
                                                          ,'" . $_POST['asset_qty_insert'][$a] . "'
                                                          ,'" . $_POST['asset_in_mou'][$a] . "'
-                                                         ,'" . $v_material_id . "'
+                                                         ,'$get_last_index'
                                                          ,'" . $_POST['asset_remark'][$a] . "'
                                                          ,'$datetime'
                                                       )";
-         mysqli_query($connect, $sql_m);
+            mysqli_query($connect, $sql_m);
+         }
       }
+      header('location:admin_asset_receive.php?message=success');
+      exit();
    }
-   header('location:admin_asset_receive.php?message=success');
-   exit();
 }
 /** IMAGES */
 if (isset($_POST['btnimage'])) {
@@ -93,15 +96,15 @@ if (isset($_POST['btnimage'])) {
    }
 }
 /** update */
-if(isset($_POST['btnupdate'])){
+if (isset($_POST['btnupdate'])) {
    $v_id = $_POST['txt_id'];
    $v_transfer_no = $_POST['edit_tran_ref'];
-   $v_start_date = $_POST['edit_start_date']; 
-   $v_receive_date = $_POST['edit_date']; 
-   $v_price = $_POST['edit_price']; 
-   $v_total = $_POST['edit_total']; 
-   $v_status = $_POST['edit_status']; 
-   $v_note = $_POST['edit_note']; 
+   $v_start_date = $_POST['edit_start_date'];
+   $v_receive_date = $_POST['edit_date'];
+   $v_price = $_POST['edit_price'];
+   $v_total = $_POST['edit_total'];
+   $v_status = $_POST['edit_status'];
+   $v_note = $_POST['edit_note'];
    $sql = "UPDATE admin_asset_receive SET adassrt_tran_id = '$v_transfer_no'
                                           ,adassrt_date = '$v_start_date'
                                           ,adasstr_receive_date = '$v_receive_date'
@@ -111,24 +114,16 @@ if(isset($_POST['btnupdate'])){
                                           ,adassrt_note = '$v_note'
                                           ,adassrt_updated_date = NOW() WHERE adassrt_id = '$v_id'
                                           ";
-   mysqli_query($connect,$sql);
+   mysqli_query($connect, $sql);
    header("location:admin_asset_receive.php?message=update");
    exit();
 }
 if (isset($_GET["del_id"])) {
    $id = $_GET["del_id"];
-
    $sql = "DELETE FROM admin_asset_receive WHERE adassrt_id = '$id'";
    $result = mysqli_query($connect, $sql);
    header("location: admin_asset_receive.php?message=delete");
 }
-if(isset($_GET['del_id_m'])){
-   $id_m = $_GET['del_id_m'];
-   $sql_m = "DELETE FROM admin_asset_receive_material WHERE adassrtm_id = '$id_m'";
-   $result = mysqli_query($connect, $sql_m);
-   header("location: admin_asset_receive.php?message=delete");
-}
-
 ?>
 <!DOCTYPE html>
 <html>
@@ -341,7 +336,7 @@ if(isset($_GET['del_id_m'])){
                                        </div>
                                        <div class="form-group col-xs-6">
                                           <label for="">Remark:</label>
-                                          <textarea name="edit_note" class="form-control" id="edit_note"  rows="2"></textarea>
+                                          <textarea name="edit_note" class="form-control" id="edit_note" rows="2"></textarea>
                                        </div>
                                     </div>
                                     <div class="modal-footer">
@@ -445,7 +440,7 @@ if(isset($_GET['del_id_m'])){
                                     <td><?= $v_start_date; ?></td>
                                     <td><?= $v_qty; ?></td>
                                     <td><?= number_format($v_unit_price) . '$'; ?></td>
-                                    <td><?= number_format($v_total) . '$';?></td>
+                                    <td><?= number_format($v_total) . '$'; ?></td>
                                     <td><?= $v_transfer_no; ?></td>
                                     <td><?= $v_transfer_from; ?></td>
                                     <td><?= $v_receive_date; ?></td>
@@ -463,7 +458,7 @@ if(isset($_GET['del_id_m'])){
                                        </a>
                                     </td>
                                     <td>
-                                       <a href="edit_admin_asset_receive.php?id=<?php echo $row['adassrt_id']; ?>&&materia_id=<?=$row['adassrt_material_id'];?>" class="btn btn-info btn-sm"><i style="color:white;" class="fa fa-eye"></i></a>
+                                       <a href="edit_admin_asset_receive.php?id=<?php echo $row['adassrt_id']; ?>" class="btn btn-info btn-sm"><i style="color:white;" class="fa fa-eye"></i></a>
                                        <a onclick="doUpdate(
                                                          '<?= $row['adassrt_id']; ?>',
                                                          '<?= $row['adassrt_tran_id']; ?>',
@@ -549,7 +544,7 @@ if(isset($_GET['del_id_m'])){
          }
       }
 
-      function doUpdate(id, tran_id, receive_date, price, total, date,status,note) {
+      function doUpdate(id, tran_id, receive_date, price, total, date, status, note) {
          $("#txt_id").val(id);
          $("#edit_tran_ref").val(tran_id).change();
          $("#edit_date").val(receive_date);

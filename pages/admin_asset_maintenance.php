@@ -4,40 +4,38 @@ date_default_timezone_set("Asia/Bangkok");
 $datetime = date('Y-m-d H:i:s');
 $yeardate = date('Y-m-d');
 $user_id = $_SESSION['user_id'];
-$username = $_SESSION['username']; 
+$username = $_SESSION['username'];
 
 $tarDir = "../img/upload/asset_maintenance/photo/";
-if(isset($_POST['btnadd'])){
+if (isset($_POST['btnadd'])) {
    $v_asset_type = $_POST['asset_type']; //
-   $v_maintenance_no = $_POST['maintenance_no'];// 
-   $v_asset_code =$_POST['asset_code']; //
-   $v_material_id = $_POST['material_id'];// 
+   $v_maintenance_no = $_POST['maintenance_no']; // 
+   $v_asset_code = $_POST['asset_code']; //
    /** IMAGES */
-   $v_asset_image = $_FILES['asset_image']['name']; 
+   $v_asset_image = $_FILES['asset_image']['name'];
    $v_img_name = '';
-   if(!empty($v_asset_image)){
+   if (!empty($v_asset_image)) {
       $v_img_name = date("Ymd") . "_" . basename($_FILES['asset_image']['name']);
       $v_img_fullname = $tarDir . date("Ymd") . "_" . basename($_FILES['asset_image']['name']);
-      move_uploaded_file($_FILES['asset_image']['tmp_name'],$v_img_fullname);
+      move_uploaded_file($_FILES['asset_image']['tmp_name'], $v_img_fullname);
    }
    /**END IMAGES */
-   $v_maintenance_reason = $_POST['maintenance_reason'];//
+   $v_maintenance_reason = $_POST['maintenance_reason']; //
    $v_asset_status = $_POST['asset_status']; //
    $v_total_amount = $_POST['total_amount']; //
    $v_unit_price = $_POST['unit_price']; //
-   $v_asset_mou = $_POST['asset_mou'];//
+   $v_asset_mou = $_POST['asset_mou']; //
    $v_qty = $_POST['qty']; //
    $v_maintenance_fee = $_POST['maintenance_fee']; //
    $v_asset_category = $_POST['asset_category']; //
-   $v_main_by = $_POST['main_by'];//
+   $v_main_by = $_POST['main_by']; //
    $v_asset_name = $_POST['asset_name']; //
-   $v_maintenance_date = $_POST['maintenance_date']; 
+   $v_maintenance_date = $_POST['maintenance_date'];
 
    $sql = "INSERT INTO admin_asset_maintenance(
                                     adassm_type,
                                     adassm_mainten_no,
                                     adassm_code,
-                                    adassm_material_id,
                                     adassm_img,
                                     adassm_note,
                                     adassm_status,
@@ -56,7 +54,6 @@ if(isset($_POST['btnadd'])){
                                     '$v_asset_type'
                                     ,'$v_maintenance_no'
                                     ,'$v_asset_code'
-                                    ,'$v_material_id'
                                     ,'$v_img_name'
                                     ,'$v_maintenance_reason'
                                     ,'$v_asset_status'
@@ -72,47 +69,50 @@ if(isset($_POST['btnadd'])){
                                     ,'$user_id'
                                     ,NOW()
                                  )";
-   $result = mysqli_query($connect,$sql);
-   if(isset($_POST['asset_material'])|| isset($_POST['asset_remark'])){
-      for($a = 0;$a<count($_POST['asset_material']); $a++){
-         $sql_m = "INSERT INTO admin_maintenance_material(admm_name
+   $result = mysqli_query($connect, $sql);
+   $last_index_query = "SELECT max(adassm_id) FROM admin_asset_maintenance";
+   $last_index_result = mysqli_query($connect, $last_index_query);
+   $last_index_row = mysqli_fetch_assoc($last_index_result);
+   if ($last_index_row) {
+      if (!empty($_POST['asset_material']) || !empty($_POST['asset_remark'])) {
+         $get_last_index = $last_index_row['max(adassm_id)'];
+         for ($a = 0; $a < count($_POST['asset_material']); $a++) {
+            $sql_m = "INSERT INTO admin_maintenance_material(admm_name
                                                       ,admm_qty
                                                       ,admm_note
                                                       ,admm_mou
                                                       ,admm_material_id)
                                                       values(
-                                                         '".$_POST['asset_material'][$a]."'
-                                                         ,'".$_POST['asset_qty_insert'][$a]."'
-                                                         ,'".$v_POST['asset_remark'][$a]."'
-                                                         ,'".$_POST['asset_in_mou'][$a]."'
-                                                         ,'".$v_material_id."')";
-      mysqli_query($connect,$sql_m);
+                                                         '" . $_POST['asset_material'][$a] . "'
+                                                         ,'" . $_POST['asset_qty_insert'][$a] . "'
+                                                         ,'" . $_POST['asset_remark'][$a] . "'
+                                                         ,'" . $_POST['asset_in_mou'][$a] . "'
+                                                         ,'$get_last_index')";
+            mysqli_query($connect, $sql_m);
+         }
       }
+      header("location:admin_asset_maintenance.php?message=success");
+      exit();
    }
-   header("location:admin_asset_maintenance.php?message=success");
-   exit();
 }
 /**photo */
-if(isset($_POST['btnimage'])){
+if (isset($_POST['btnimage'])) {
    $photo = $_FILES['edit_photo']['name'];
    $id_photo = $_POST['asset_photo'];
-   if(!empty($photo)){
+   if (!empty($photo)) {
       $photo_name = date("Ymd") . "_" . basename($photo);
       $photo_moved = $tarDir . $photo_name;
       move_uploaded_file($_FILES['edit_photo']['tmp_name'], $photo_moved);
       $sql = "UPDATE admin_asset_maintenance SET adassm_img = '$photo_name' WHERE adassm_id = '$id_photo'";
-      mysqli_query($connect,$sql);
+      mysqli_query($connect, $sql);
       header("location:admin_asset_maintenance.php?message=update");
       exit();
    }
 }
-if(isset($_GET['id'])|| isset($_GET['m_id'])){
+if (isset($_GET['id'])) {
    $id = $_GET['id'];
-   $id_m = $_GET['m_id'];
    $sql = "DELETE FROM admin_asset_maintenance WHERE adassm_id = $id";
-   $sql_m = "DELETE FROM admin_maintenance_material WHERE admm_material_id = $id_m";
-   mysqli_query($connect,$sql_m);
-   mysqli_query($connect,$sql);
+   mysqli_query($connect, $sql);
    header("location:admin_asset_maintenance.php?message=delete");
    exit();
 }
@@ -155,17 +155,17 @@ if (isset($_POST['btn_update'])) {
 }
 /** update_files */
 
-if(isset($_POST['btnUpdate_file'])){
+if (isset($_POST['btnUpdate_file'])) {
    $v_file_id = $_POST['edit_file'];
    $v_file = @$_FILES['file_update'];
    $dir = "../img/upload/asset_maintenance/file/" . basename($_FILES['file_update']['name']);
    $file_type = strtolower(pathinfo($dir, PATHINFO_EXTENSION));
-   if($file_type == 'pdf'){
-      if($v_file['name']!=""){
-         $new_name = date("Ymd") . "-" . rand(1111,9999) . ".pdf";
-         move_uploaded_file($v_file['tmp_name'],"../img/upload/asset_maintenance/file/". $new_name);
+   if ($file_type == 'pdf') {
+      if ($v_file['name'] != "") {
+         $new_name = date("Ymd") . "-" . rand(1111, 9999) . ".pdf";
+         move_uploaded_file($v_file['tmp_name'], "../img/upload/asset_maintenance/file/" . $new_name);
          $sql = "UPDATE admin_asset_maintenance SET adassm_file = '$new_name' where adassm_id ='$v_file_id'";
-         mysqli_query($connect,$sql);
+         mysqli_query($connect, $sql);
          header("location:admin_asset_maintenance.php?message=update");
          exit();
       }
@@ -221,7 +221,7 @@ if(isset($_POST['btnUpdate_file'])){
    <div class="wrapper row-offcanvas row-offcanvas-left">
       <?php include "left_menu.php" ?>
       <aside class="right-side">
-      <div class="col-xs-12">
+         <div class="col-xs-12">
             <?php
             if (!empty($_GET['message']) && $_GET['message'] == 'success') {
                echo '<div class="alert alert-success">';
@@ -246,7 +246,7 @@ if(isset($_POST['btnUpdate_file'])){
          </section>
          <section class="content">
             <div class="row">
-            <div class="modal fade" id="exampleModalLong" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle" aria-hidden="true">
+               <div class="modal fade" id="exampleModalLong" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle" aria-hidden="true">
                   <div class="modal-dialog" style="width: 750px;" role="document">
                      <div class="modal-content">
                         <div class="modal-header">
@@ -263,10 +263,7 @@ if(isset($_POST['btnUpdate_file'])){
                                     <img src="../img/no_image.jpg" id="show_photo" class="rounded img-thumbnail img-fuild" height="900px;" alt="..." />
                                  </figure>
                                  <input class="form-control" type="file" name="asset_image" id="asset_image" accept="image/*" onchange="show_photo_pre_add(event);">
-                                 <div class="form-group col-md-12">
-                                    <label for="material_id">Material ID</label>
-                                    <input required type="number" name="material_id" class="form-control" id="material_id">
-                                 </div>
+
                               </div>
                               <div class="form-group col-md-8">
                                  <div class="col-md-12">
@@ -454,7 +451,7 @@ if(isset($_POST['btnUpdate_file'])){
                               <input type="hidden" name="old_file" id="old_file">
                               <div class="col-xs-12 form-group">
                                  <label for="">File:</label>
-                                 <input type="file" required name="file_update" class="form-control" accept=".pdf" id="file_update"onchange ="loadFile(event);">
+                                 <input type="file" required name="file_update" class="form-control" accept=".pdf" id="file_update" onchange="loadFile(event);">
                               </div>
                         </div>
                         <div class="modal-footer">
@@ -604,7 +601,7 @@ if(isset($_POST['btnUpdate_file'])){
                <div class="col-xs-12 connectedSortable">
                   <div class="box">
                      <div class="box header">
-                     <button class="btn btn-sm btn-primary" type="button" style="margin-bottom: 2%;" data-toggle="modal" data-target="#exampleModalLong">
+                        <button class="btn btn-sm btn-primary" type="button" style="margin-bottom: 2%;" data-toggle="modal" data-target="#exampleModalLong">
                            <i class="fa fa-plus-square-o" aria-hidden="true"></i> Add New
                         </button>
                         <div class="box-body table-responsive">
@@ -671,34 +668,33 @@ if(isset($_POST['btnUpdate_file'])){
                                                                   echo '/upload/asset_maintenance/photo/' . $v_photo;
                                                                } else {
                                                                   echo '/no_image.jpg';
-                                                               } ?>" ismap style="width:80; height:80;" alt="">
-                                             
+                                                               } ?>" ismap style="width:60; height:60;" alt="">
+
                                           </a>
-                                          <a  onclick="doImage('<?php echo $row['adassm_id']; ?>'
+                                          <a onclick="doImage('<?php echo $row['adassm_id']; ?>'
                                                                   ,'<?php echo $row['adassm_img']; ?>'
-                                                            );"  style="float:right; cursor:pointer;"data-toggle="modal" data-target="#modal_image" href="#"><i style="color:#3c8dbc;" class="fa fa-pencil"></i></a>
+                                                            );" style="float:right; cursor:pointer;" data-toggle="modal" data-target="#modal_image" href="#"><i style="color:#3c8dbc;" class="fa fa-pencil"></i></a>
                                        </td>
                                        <td>
                                           <?php
                                           if ($v_file == '') {
                                           ?>
                                              <a target="_blank" href="../img/file/image_no_file.png">
-                                                <img width="80" height="80" src="../img/file/image_no_file.png">
+                                                <img width="60" height="60" src="../img/file/image_no_file.png">
                                              </a>
                                           <?php
                                           } else {
                                           ?>
                                              <a target="_blank" href="../img/upload/asset_maintenance/file/<?php echo $v_file; ?>">
-                                                <img width="80px" height="80px" src="../img/file/pdf_image.png" alt="">
+                                                <img width="60px" height="60px" src="../img/file/pdf_image.png" alt="">
                                              </a>
                                           <?php
                                           }
                                           ?>
-                                          <a style="float:right; cursor:pointer;" onclick="doFile('<?php echo $row['adassm_id'];?>','<?php echo $v_file;?>');" href=""data-toggle="modal" data-target="#modal_file"><i class="fa fa-pencil" ></i></a>
+                                          <a style="float:right; cursor:pointer;" onclick="doFile('<?php echo $row['adassm_id']; ?>','<?php echo $v_file; ?>');" href="" data-toggle="modal" data-target="#modal_file"><i class="fa fa-pencil"></i></a>
                                        </td>
                                        <td class="text-center" style="vertical-align: middle; width:150px">
-                                          <a class="btn btn-sm btn-primary" href="#" data-toggle="modal" data-target="#modal_update"
-                                          onclick="doUpdate(
+                                          <a class="btn btn-sm btn-primary" href="#" data-toggle="modal" data-target="#modal_update" onclick="doUpdate(
                                                 '<?php echo $row['adassm_id']; ?>',
                                                 '<?php echo $row['adassm_code']; ?>',
                                                 '<?php echo $row['adassm_mainten_no']; ?>',
@@ -714,12 +710,11 @@ if(isset($_POST['btnUpdate_file'])){
                                                 '<?php echo $row['adassm_total']; ?>',
                                                 '<?php echo $row['adassm_status']; ?>',
                                                 '<?php echo $row['adassm_note']; ?>',
-                                             );"
-                                          >
+                                             );">
                                              <i class="fa fa-edit"></i>
                                           </a>
-                                          <a class="btn btn-sm btn-info" href="admin_asset_maintenance_view.php?id=<?=$row['adassm_id'];?>&&m_id=<?=$row['adassm_material_id'];?>"><i class="fa fa-eye"></i></a>
-                                          <a style="color: white;" class="btn-sm btn-danger btn" onclick="return confirm('Are you sure to delete?');" href="admin_asset_maintenance.php?id=<?=$row['adassm_id'];?>&&m_id=<?=$row['adassm_material_id'];?>"><i class="fa fa-trash"></i></a>
+                                          <a class="btn btn-sm btn-info" href="admin_asset_maintenance_view.php?id=<?= $row['adassm_id']; ?>"><i class="fa fa-eye"></i></a>
+                                          <a style="color: white;" class="btn-sm btn-danger btn" onclick="return confirm('Are you sure to delete?');" href="admin_asset_maintenance.php?id=<?= $row['adassm_id']; ?>"><i class="fa fa-trash"></i></a>
                                        </td>
                                     </tr>
                                  <?php
@@ -736,74 +731,76 @@ if(isset($_POST['btnUpdate_file'])){
       </aside>
    </div>
 </body>
-   <!-- jQuery 2.0.2 -->
-   <script src="http://ajax.googleapis.com/ajax/libs/jquery/2.0.2/jquery.min.js"></script>
-   <!-- jQuery UI 1.10.3 -->
-   <script src="../js/jquery-ui-1.10.3.min.js" type="text/javascript"></script>
-   <!-- DATA TABES SCRIPT -->
-   <script src="../js/plugins/datatables/jquery.dataTables.js" type="text/javascript"></script>
-   <script src="../js/plugins/datatables/dataTables.bootstrap.js" type="text/javascript"></script>
-   <!-- Bootstrap -->
-   <script src="../js/bootstrap.min.js" type="text/javascript"></script>
-   <!-- Morris.js charts -->
-   <script src="http://cdnjs.cloudflare.com/ajax/libs/raphael/2.1.0/raphael-min.js"></script>
-   <script src="../js/plugins/morris/morris.min.js" type="text/javascript"></script>
-   <!-- Sparkline -->
-   <script src="../js/plugins/sparkline/jquery.sparkline.min.js" type="text/javascript"></script>
-   <!-- jvectormap -->
-   <script src="../js/plugins/jvectormap/jquery-jvectormap-1.2.2.min.js" type="text/javascript"></script>
-   <script src="../js/plugins/jvectormap/jquery-jvectormap-world-mill-en.js" type="text/javascript"></script>
-   <!-- fullCalendar -->
-   <script src="../js/plugins/fullcalendar/fullcalendar.min.js" type="text/javascript"></script>
-   <!-- jQuery Knob Chart -->
-   <script src="../js/plugins/jqueryKnob/jquery.knob.js" type="text/javascript"></script>
-   <!-- daterangepicker -->
-   <script src="../js/plugins/daterangepicker/daterangepicker.js" type="text/javascript"></script>
-   <!-- Bootstrap WYSIHTML5 -->
-   <script src="../js/plugins/bootstrap-wysihtml5/bootstrap3-wysihtml5.all.min.js" type="text/javascript"></script>
-   <!-- iCheck -->
-   <script src="../js/plugins/iCheck/icheck.min.js" type="text/javascript"></script>
-   <!-- Latest compiled and minified JavaScript -->
-   <script src="https://cdn.jsdelivr.net/npm/bootstrap-select@1.13.14/dist/js/bootstrap-select.min.js"></script>
-   <!-- AdminLTE App -->
-   <script src="../js/AdminLTE/app.js" type="text/javascript"></script>
-   <script type="text/javascript">
-      function show_photo_pre_add(event) {
-         if (event.target.files.length > 0) {
-            var src = URL.createObjectURL(event.target.files[0]);
-            document.getElementById("show_photo").src = src;
-         }
+<!-- jQuery 2.0.2 -->
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/2.0.2/jquery.min.js"></script>
+<!-- jQuery UI 1.10.3 -->
+<script src="../js/jquery-ui-1.10.3.min.js" type="text/javascript"></script>
+<!-- DATA TABES SCRIPT -->
+<script src="../js/plugins/datatables/jquery.dataTables.js" type="text/javascript"></script>
+<script src="../js/plugins/datatables/dataTables.bootstrap.js" type="text/javascript"></script>
+<!-- Bootstrap -->
+<script src="../js/bootstrap.min.js" type="text/javascript"></script>
+<!-- Morris.js charts -->
+<script src="http://cdnjs.cloudflare.com/ajax/libs/raphael/2.1.0/raphael-min.js"></script>
+<script src="../js/plugins/morris/morris.min.js" type="text/javascript"></script>
+<!-- Sparkline -->
+<script src="../js/plugins/sparkline/jquery.sparkline.min.js" type="text/javascript"></script>
+<!-- jvectormap -->
+<script src="../js/plugins/jvectormap/jquery-jvectormap-1.2.2.min.js" type="text/javascript"></script>
+<script src="../js/plugins/jvectormap/jquery-jvectormap-world-mill-en.js" type="text/javascript"></script>
+<!-- fullCalendar -->
+<script src="../js/plugins/fullcalendar/fullcalendar.min.js" type="text/javascript"></script>
+<!-- jQuery Knob Chart -->
+<script src="../js/plugins/jqueryKnob/jquery.knob.js" type="text/javascript"></script>
+<!-- daterangepicker -->
+<script src="../js/plugins/daterangepicker/daterangepicker.js" type="text/javascript"></script>
+<!-- Bootstrap WYSIHTML5 -->
+<script src="../js/plugins/bootstrap-wysihtml5/bootstrap3-wysihtml5.all.min.js" type="text/javascript"></script>
+<!-- iCheck -->
+<script src="../js/plugins/iCheck/icheck.min.js" type="text/javascript"></script>
+<!-- Latest compiled and minified JavaScript -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap-select@1.13.14/dist/js/bootstrap-select.min.js"></script>
+<!-- AdminLTE App -->
+<script src="../js/AdminLTE/app.js" type="text/javascript"></script>
+<script type="text/javascript">
+   function show_photo_pre_add(event) {
+      if (event.target.files.length > 0) {
+         var src = URL.createObjectURL(event.target.files[0]);
+         document.getElementById("show_photo").src = src;
       }
-      function show_photo_pre(e){
-         if(e.target.files.length > 0){
-            var src =URL.createObjectURL(e.target.files[0]);
-            document.getElementById("v_show_photo").src = src;
-         }
+   }
+
+   function show_photo_pre(e) {
+      if (e.target.files.length > 0) {
+         var src = URL.createObjectURL(e.target.files[0]);
+         document.getElementById("v_show_photo").src = src;
       }
-      function doImage(id,img){
-         $("#asset_photo").val(id);
-         
-         if(img =='' || img =="NULL"){
-            document.getElementById('v_show_photo').setAttribute('src','../img/no_image.jpg');
-         }else{
-            document.getElementById('v_show_photo').setAttribute('src',"../img/upload/asset_maintenance/photo/" +img);
-         }
+   }
+
+   function doImage(id, img) {
+      $("#asset_photo").val(id);
+
+      if (img == '' || img == "NULL") {
+         document.getElementById('v_show_photo').setAttribute('src', '../img/no_image.jpg');
+      } else {
+         document.getElementById('v_show_photo').setAttribute('src', "../img/upload/asset_maintenance/photo/" + img);
       }
-      $(function() {
-         $("select").selectpicker();
-         $("#menu_admin_manage").addClass("active");
-         $("#asset_mainten").addClass("active");
-         $("#asset_mainten").css("background-color", "##367fa9");
-         $('#info_data').dataTable();
-      });
-      window.addEventListener('DOMContentLoaded', function() {
-         $(document).ready(function() {
-            var no = 1;
-            $(".add-row").on('click', function() {
-               // var material_no = "<td><input class='form-control' type='text' name='asset_material_no[]' id='asset_material_no'/></td>";
-               var material = "<td><input class='form-control' required name='asset_material[]' id='asset_material' type='text'></td>";
-               var qty = "<td><input class='form-control' required name='asset_qty_insert[]' id='asset_qty_insert' type='number'></td>";
-               var mou = `<td>
+   }
+   $(function() {
+      $("select").selectpicker();
+      $("#menu_admin_manage").addClass("active");
+      $("#asset_mainten").addClass("active");
+      $("#asset_mainten").css("background-color", "##367fa9");
+      $('#info_data').dataTable();
+   });
+   window.addEventListener('DOMContentLoaded', function() {
+      $(document).ready(function() {
+         var no = 1;
+         $(".add-row").on('click', function() {
+            // var material_no = "<td><input class='form-control' type='text' name='asset_material_no[]' id='asset_material_no'/></td>";
+            var material = "<td><input class='form-control' required name='asset_material[]' id='asset_material' type='text'></td>";
+            var qty = "<td><input class='form-control' required name='asset_qty_insert[]' id='asset_qty_insert' type='number'></td>";
+            var mou = `<td>
                                  <select class='form-control' required name='asset_in_mou[]' id='asset_in_mou'data-live-search="true">
                                     <option selected></option>
                                     <?php
@@ -815,41 +812,44 @@ if(isset($_POST['btnUpdate_file'])){
                                     ?>
                                  </select>
                               </td>`;
-               var Remark = "<td><input class='form-control'required name='asset_remark[]' id='asset_remark' type='text'></td>";
-               var remove_button = "<td><button type='button' class='remove-row btn btn-sm btn-danger'><i class='fa fa-trash'></i></button></td>";
-               //    var action = "<th class='text-center'><i class='fa fa-cog' ></i></th>";
-               var markup = "<tr>" + "<td>" + no + "</td>" + material + qty + mou + Remark + remove_button + "</tr>";
-               $("#asset_table").append(markup); //    $("thead tr")[i].append(action);
-               no++;
-               $("#asset_table").on('click', '.remove-row', function() {
-                  $(this).closest("tr").remove();
-                  if ($("#asset_table")) {
-                     no = 1;
-                  }
-               });
+            var Remark = "<td><input class='form-control'required name='asset_remark[]' id='asset_remark' type='text'></td>";
+            var remove_button = "<td><button type='button' class='remove-row btn btn-sm btn-danger'><i class='fa fa-trash'></i></button></td>";
+            //    var action = "<th class='text-center'><i class='fa fa-cog' ></i></th>";
+            var markup = "<tr>" + "<td>" + no + "</td>" + material + qty + mou + Remark + remove_button + "</tr>";
+            $("#asset_table").append(markup); //    $("thead tr")[i].append(action);
+            no++;
+            $("#asset_table").on('click', '.remove-row', function() {
+               $(this).closest("tr").remove();
+               if ($("#asset_table")) {
+                  no = 1;
+               }
             });
          });
       });
-      function doUpdate(id, e_asset_code, e_broken_no, e_asset_type, e_broken_date, e_asset_name, broken_by_whom, e_asset_categroy, e_start_date, QTY, MOU, e_unit_price, e_total, e_status, e_resaon) {
-         $("#edit_id").val(id);
-         $("#edit_asset_code").val(e_asset_code).change();
-         $("#edit_maintenance_no").val(e_broken_no);
-         $("#edit_asset_type").val(e_asset_type).change();
-         $("#edit_maintenance_date").val(e_broken_date);
-         $("#edit_asset_name").val(e_asset_name);
-         $("#edit_maintenance_by_whom").val(broken_by_whom);
-         $("#edit_asset_category").val(e_asset_categroy).change();
-         $("#edit_start_date").val(e_start_date);
-         $("#edit_asset_QTY").val(QTY);
-         $("#edit_asset_mou").val(MOU).change();
-         $("#edit_current_unit_price").val(e_unit_price);
-         $("#edit_total_amount").val(e_total);
-         $("#edit_asset_status").val(e_status).change();
-         $("#edit_reason").val(e_resaon);
-      }
-      function doFile(id,file){
-            $("#edit_file").val(id);
-            $("#old_file").val(file);
-         }
-   </script>
+   });
+
+   function doUpdate(id, e_asset_code, e_broken_no, e_asset_type, e_broken_date, e_asset_name, broken_by_whom, e_asset_categroy, e_start_date, QTY, MOU, e_unit_price, e_total, e_status, e_resaon) {
+      $("#edit_id").val(id);
+      $("#edit_asset_code").val(e_asset_code).change();
+      $("#edit_maintenance_no").val(e_broken_no);
+      $("#edit_asset_type").val(e_asset_type).change();
+      $("#edit_maintenance_date").val(e_broken_date);
+      $("#edit_asset_name").val(e_asset_name);
+      $("#edit_maintenance_by_whom").val(broken_by_whom);
+      $("#edit_asset_category").val(e_asset_categroy).change();
+      $("#edit_start_date").val(e_start_date);
+      $("#edit_asset_QTY").val(QTY);
+      $("#edit_asset_mou").val(MOU).change();
+      $("#edit_current_unit_price").val(e_unit_price);
+      $("#edit_total_amount").val(e_total);
+      $("#edit_asset_status").val(e_status).change();
+      $("#edit_reason").val(e_resaon);
+   }
+
+   function doFile(id, file) {
+      $("#edit_file").val(id);
+      $("#old_file").val(file);
+   }
+</script>
+
 </html>

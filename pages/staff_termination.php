@@ -271,7 +271,7 @@ if (isset($_GET["del_id"])) {
                                                       <option selected value=""></option>
                                                       <option value=1>No</option>
                                                       <option value=2>Yes</option>
-                                                   </select> <input class="form-control" type="checkbox" name="" value=1 id="">Other
+                                                   </select>
                                                 </div>
                                                 <div class="show_hid form-group col-md-6" style="display:none;">
                                                    <label for="total_warning">Total Warning</label>
@@ -285,13 +285,17 @@ if (isset($_GET["del_id"])) {
                                                    <label class="form-label" for="status">Status:</label>
                                                    <select class="form-control" name="status" id="status" data-live-search="true">
                                                       <option selected value=""></option>
-                                                      <?php
-                                                      $sql = "SELECT * FROM text_termination_status";
-                                                      $result = mysqli_query($connect, $sql);
-                                                      while ($row = mysqli_fetch_assoc($result)) {
-                                                         echo '<option value="' . $row['tts_id'] . '">' . $row['tts_name'] . '</option>';
-                                                      }
-                                                      ?>
+                                                         <?php
+                                                            $user_id = $_SESSION['user_id'];
+                                                            $sql = "SELECT * FROM text_termination_status A
+                                                                              LEFT JOIN text_termination_status B ON B.tsu_status_id=A.tts_id
+                                                                              WHERE tsu_user_id=$user_id
+                                                                              ";
+                                                            $result = mysqli_query($connect, $sql);
+                                                            while ($row = mysqli_fetch_assoc($result)) {
+                                                               echo '<option value="' . $row['tts_id'] . '">' . $row['tts_name'] . '</option>';
+                                                            }
+                                                         ?>
                                                    </select>
                                                 </div>
                                                 <div class="show_hid form-group col-xs-12" style="display:none;">
@@ -373,11 +377,14 @@ if (isset($_GET["del_id"])) {
                                              <label>Status:</label>
                                              <select class="form-control" id="edit_status" name="edit_status">
                                                 <?php
-                                                $sql = 'SELECT * FROM text_termination_status';
-                                                $result = mysqli_query($connect, $sql);
-                                                while ($row = mysqli_fetch_assoc($result)) {
-                                                   echo '<option value="' . $row['tts_id'] . '"> ' . $row['tts_name'] . '</option>';
-                                                }
+                                                   $sql = "SELECT * FROM text_termination_status A
+                                                                     LEFT JOIN text_termination_status B ON B.tsu_status_id=A.tts_id
+                                                                     WHERE tsu_user_id=$user_id
+                                                                     ";
+                                                   $result = mysqli_query($connect, $sql);
+                                                   while ($row = mysqli_fetch_assoc($result)) {
+                                                      echo '<option value="' . $row['tts_id'] . '"> ' . $row['tts_name'] . '</option>';
+                                                   }
                                                 ?>
                                              </select>
                                           </div>

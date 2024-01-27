@@ -49,7 +49,6 @@ if (isset($_POST["btnadd"])) {
    $v_cunrrent_position = $_POST["cunrrent_position"];
    $sql = "UPDATE employee_registration SET er_position_id = '$v_cunrrent_position'
                                        WHERE er_id = $v_job_id";
-
    $result = mysqli_query($connect, $sql);
    //update position registration
    header('location:staff_request_new_position.php?message=success');
@@ -260,8 +259,12 @@ if (isset($_GET["del_id"])) {
                                                    <label for="status">Stutus:</label>
                                                    <select class="form-control" name="status" id="status" data-live-search="true">
                                                       <option disabled selected value="">=== Select ===</option>
-                                                      <?php 
-                                                         $sql = "SELECT * FROM text_requ_new_pos_status order by trnp_name asc";
+                                                      <?php
+                                                         $user_id = $_SESSION['user_id'];
+                                                         $sql = "SELECT * FROM text_requ_new_pos_status A
+                                                                           LEFT JOIN text_requ_new_pos_status_user B ON B.rnpsu_status_id=A.trnp_id
+                                                                           WHERE rnpsu_user_id=$user_id
+                                                                           order by trnp_name asc";
                                                          $result = mysqli_query($connect, $sql);
                                                          while ($row = mysqli_fetch_assoc($result)) {
                                                          ?>
@@ -367,8 +370,12 @@ if (isset($_GET["del_id"])) {
                                              <label class="form-label" for="edit_status">Status:</label>
                                              <select class="form-control" name="edit_status" id="edit_status" data-live-search="true">
                                                 <option  selected value=""></option>
-                                                <?php 
-                                                   $sql = "SELECT * FROM text_requ_new_pos_status";
+                                                <?php
+                                                   $user_id = $_SESSION['user_id'];
+                                                   $sql = "SELECT * FROM text_requ_new_pos_status A
+                                                                     LEFT JOIN text_requ_new_pos_status_user B ON B.rnpsu_status_id=A.trnp_id
+                                                                     WHERE rnpsu_user_id=$user_id
+                                                                     order by trnp_name asc";
                                                    $result = mysqli_query($connect,$sql);
                                                    while($row = mysqli_fetch_assoc($result)){
                                                       echo '<option value="'. $row['trnp_id'] .'" >'. $row['trnp_name'] .'</option>';

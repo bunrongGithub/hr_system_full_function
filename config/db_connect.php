@@ -17,5 +17,3 @@ if(!$connect->connect_error) {
 else {
 	die("Connection Failed : " . $connect->connect_error);
 }
-
-?>

@@ -17,7 +17,6 @@ if (isset($_POST['add_new'])) {
    $_qty          = $_POST['txt_QTY'];
    $_mou          = $_POST['txt_mou'];
    $_dep_a_p_mon  = $_POST['txt_de_amount_per_month'];
-   $_material     = $_POST['txt_material'];
    $_total_amount = $_POST['txt_total_amount'];
    $_dep_a_p_day  = $_POST['txt_de_amount_per_day'];
    $_unit_price   = $_POST['txt_unit_price'];
@@ -35,8 +34,7 @@ if (isset($_POST['add_new'])) {
                      , adassd_depre_date
                      , adassd_qty
                      , adassd_mou
-                     , adassd_depre_amount_per_month
-                     , adassd_mater_id 
+                     , adassd_depre_amount_per_month 
                      , adassd_amount
                      , adassd_depre_payday
                      , adassd_price
@@ -56,7 +54,6 @@ if (isset($_POST['add_new'])) {
                      ,'$_qty'
                      ,'$_mou'
                      ,'$_dep_a_p_mon'
-                     ,'$_material'
                      ,'$_total_amount'
                      ,'$_dep_a_p_day'
                      ,'$_unit_price'
@@ -67,13 +64,77 @@ if (isset($_POST['add_new'])) {
                   )";
    /** query to database */
    mysqli_query($connect, $sql);
-   header("location:admin_asset_depreciation.php?message=success");
-   exit();
+   /**    Material form */
+   $last_index_query = "SELECT max(adassd_id) FROM admin_asset_depreciation";
+   $last_index_result = mysqli_query($connect, $last_index_query);
+   $last_index_row = mysqli_fetch_assoc($last_index_result);
+   if ($last_index_row) {
+      $get_last_index = $last_index_row['max(adassd_id)'];
+      if (!empty($_POST['asset_material']) || !empty($_POST['asset_remark']) || !empty($_POST['asset_qty_insert'])) {
+         for ($a = 0; $a < count($_POST['asset_material']); $a++) {
+            $sql_m = "INSERT INTO `admin_asset_depreciation_material`(
+                                                         adassd_m_name
+                                                         ,adassd_m_qty
+                                                         ,asdassd_m_mou
+                                                         ,adassd_m_material_id
+                                                         ,adassd_m_note
+                                                         ,adassd_m_created_at
+                                                      )VALUES(
+                                                         '" . $_POST['asset_material'][$a] . "'
+                                                         ,'" . $_POST['asset_qty_insert'][$a] . "'
+                                                         ,'" . $_POST['asset_in_mou'][$a] . "'
+                                                         ,'$get_last_index'
+                                                         ,'" . $_POST['asset_remark'][$a] . "'
+                                                         ,'$datetime'
+                                                      )";
+            mysqli_query($connect, $sql_m);
+         }
+      }
+      header("location:admin_asset_depreciation.php?message=success");
+      exit();
+   }
 }
 
 /** let update record */
-if(isset($_POST['update_data'])){
-   
+if (isset($_POST['update_data'])) {
+   $_edit_id = $_POST['edit_id'];
+   $_as_code = $_POST['edit_code'];
+   $_dep_no  = $_POST['edit_depre_no'];
+   $_category = $_POST['edit_category'];
+   $_dep_age = $_POST['edit_depre_age'];
+   $_as_type = $_POST['edit_as_type'];
+   $_as_name = $_POST['edit_as_name'];
+   $_dep_date = $_POST['edit_depre_start_date'];
+   $_qty     = $_POST['edit_QTY'];
+   $_mou     = $_POST['edit_mou'];
+   $_dep_pay_day = $_POST['edit_de_amount_per_day'];
+   $_u_price = $_POST['edit_unit_price'];
+   $_dep_pay_month = $_POST['edit_de_amount_per_month'];
+   $_total_amount  = $_POST['edit_total_amount'];
+   $_note    = $_POST['edit_note'];
+   $_date    = $_POST['edit_date'];
+   $_dep_total_amount = $_POST['edit_depre_total_amount'];
+   $sql = "UPDATE `admin_asset_depreciation` SET 
+                  adassd_code = '$_as_code',
+                  adassd_category = '$_category',
+                  adassd_type = '$_as_type',
+                  adassd_asset_name = '$_as_name',
+                  adassd_date = '$_date',
+                  adassd_qty = '$_qty',
+                  adassd_price = '$_u_price',
+                  adassd_mou = '$_mou',
+                  adassd_amount = '$_total_amount',
+                  adassd_depre_no = '$_dep_no',
+                  adassd_depre_age = '$_dep_age',
+                  adassd_depre_date = '$_dep_date',
+                  adassd_depre_amount_per_month = '$_dep_pay_month',
+                  adassd_depre_total_amount = '$_dep_total_amount',
+                  adassd_depre_payday = '$_dep_pay_day',
+                  adassd_updated_date = now()   where adassd_id = '$_edit_id'
+   ";
+   mysqli_query($connect, $sql);
+   header("location:admin_asset_depreciation.php?message=update");
+   exit();
 }
 /** Delete record */
 if (isset($_GET['id'])) {
@@ -82,6 +143,25 @@ if (isset($_GET['id'])) {
    mysqli_query($connect, $sql);
    header("location:admin_asset_depreciation.php?message=delete");
    exit();
+}
+
+
+/** Update IMAGE */
+$Directory = "../img/upload/asset_depreciation/";
+if (isset($_POST['btnimage'])) {
+   $_img_id = $_POST['asset_photo'];
+   $_image = $_FILES['edit_photo']['name'];
+   if (!empty($_image)) {
+      $v_img_name = date("Ymd") . "_" . basename($_FILES['edit_photo']['name']);
+      $v_img_full_name = $Directory . $v_img_name;
+      move_uploaded_file($_FILES['edit_photo']['tmp_name'], $v_img_full_name);
+      $sql = "UPDATE `admin_asset_depreciation` SET adassd_img = '$v_img_name' WHERE adassd_id = '$_img_id'";
+      $result = mysqli_query($connect, $sql);
+      if ($result) {
+         header("location:admin_asset_depreciation.php?message=update");
+         exit();
+      }
+   }
 }
 ?>
 <html>
@@ -266,13 +346,28 @@ if (isset($_GET['id'])) {
                                           <input type="text" name="txt_depre_total_amount" required id="txt_depre_total_amount" class="form-control">
                                        </div>
                                     </div>
-                                    <div class="form-group col-xs-6">
-                                       <label for="">Material id:</label>
-                                       <input type="number" name="txt_material" required id="txt_material" class="form-control">
-                                    </div>
+
                                     <div class="form-group col-xs-6">
                                        <label for="">Note</label>
                                        <textarea name="txt_note" required id="txt_note" rows="1" class="form-control"></textarea>
+                                    </div>
+                                 </div>
+                                 <div class="col-md-12 row">
+                                    <table id="asset_table" class="table table-striped">
+                                       <tr>
+                                          <th class="text-center">No</th>
+                                          <!-- <th class="text-center">Material No</th> -->
+                                          <th class="text-center">Material Name</th>
+                                          <th class="text-center">QTY</th>
+                                          <th style="width: 150px;" class="text-center">Mou</th>
+                                          <th class="text-center">Remark</th>
+                                          <th class="text-center">Action</th>
+                                       </tr>
+                                    </table>
+                                 </div>
+                                 <div class="box-body">
+                                    <div class="button-group">
+                                       <a href="javascript:void(0)" class="add-row btn btn-sm btn-success"><i class="fa fa-plus-circle"></i> Add Item</a>
                                     </div>
                                  </div>
                               </div>
@@ -297,12 +392,13 @@ if (isset($_GET['id'])) {
 
                         </div>
                         <form action="" enctype="multipart/form-data" method="post">
+                           <input type="hidden" name="edit_id" id="edit_id">
                            <div class="modal-body">
                               <div class="row">
                                  <div class="col-xs-12">
                                     <div class="form-group col-xs-6">
                                        <label for="">Asset Code:</label>
-                                       <select name="txt_code" data-live-search="true" required class="form-control" id="txt_code">
+                                       <select name="edit_code" data-live-search="true" required class="form-control" id="edit_code">
                                           <option selected value=""></option>
                                           <?php
                                           $sql = "SELECT * FROM assest_code_creation";
@@ -314,12 +410,16 @@ if (isset($_GET['id'])) {
                                        </select>
                                     </div>
                                     <div class="form-group col-xs-6">
+                                       <label for="">Start Date:</label>
+                                       <input type="date" name="edit_date" required id="edit_date" class="form-control">
+                                    </div>
+                                    <div class="form-group col-xs-6">
                                        <label for="">Deprecation No:</label>
-                                       <input type="text" name="txt_depre_no" required id="txt_depre_no" class="form-control">
+                                       <input type="text" name="edit_depre_no" required id="edit_depre_no" class="form-control">
                                     </div>
                                     <div class="form-group col-xs-6">
                                        <label for="">Asset Category:</label>
-                                       <select name="txt_category" data-live-search="true" required class="form-control" id="txt_category">
+                                       <select name="edit_category" data-live-search="true" required class="form-control" id="edit_category">
                                           <option selected value=""></option>
                                           <?php
                                           $sql = "SELECT * FROM assest_code_creation";
@@ -332,23 +432,36 @@ if (isset($_GET['id'])) {
                                     </div>
                                     <div class="form-group col-xs-6">
                                        <label for="">Deprecation Age:</label>
-                                       <input type="text" name="txt_depre_age" placeholder="month.." required id="txt_depre_age" class="form-control">
+                                       <input type="text" name="edit_depre_age" placeholder="month.." required id="edit_depre_age" class="form-control">
+                                    </div>
+                                    <div class="form-group col-xs-6">
+                                       <label for="">Asset Type:</label>
+                                       <select name="edit_as_type" data-live-search="true" required class="form-control" id="edit_as_type">
+                                          <option selected value=""></option>
+                                          <?php
+                                          $sql = "SELECT * FROM `text_asset_code_creation_type`";
+                                          $result = mysqli_query($connect, $sql);
+                                          while ($row = mysqli_fetch_assoc($result)) {
+                                             echo '<option value=' . $row['acct_id'] . '>' . $row['acct_name'] . '</option>';
+                                          }
+                                          ?>
+                                       </select>
                                     </div>
                                     <div class="form-group col-xs-6">
                                        <label for="">Asset Name:</label>
-                                       <input type="text" name="txt_as_name" required id="txt_as_name" class="form-control">
+                                       <input type="text" name="edit_as_name" required id="edit_as_name" class="form-control">
                                     </div>
                                     <div class="form-group col-xs-6">
                                        <label for="">Deprecation Start Date:</label>
-                                       <input type="date" name="txt_depre_start_date" required id="txt_depre_start_date" class="form-control">
+                                       <input type="date" name="edit_depre_start_date" required id="edit_depre_start_date" class="form-control">
                                     </div>
                                     <div class="form-group col-xs-3">
                                        <label for="">QTY:</label>
-                                       <input type="text" name="txt_QTY" required id="txt_QTY" class="form-control">
+                                       <input type="text" name="edit_QTY" required id="edit_QTY" class="form-control">
                                     </div>
                                     <div class="form-group col-xs-3">
                                        <label for="">Mou:</label>
-                                       <select class=" form-control" data-live-search="true" required name="txt_mou" id="txt_mou">
+                                       <select class=" form-control" data-live-search="true" required name="edit_mou" id="edit_mou">
                                           <option selected value=""></option>
                                           <?php
                                           $sql = "SELECT * FROM text_asset_in_mou";
@@ -363,14 +476,14 @@ if (isset($_GET['id'])) {
                                        <label for="">Deprecation Pay Day:</label>
                                        <div class="input-group">
                                           <div class="input-group-addon">$</div>
-                                          <input type="text" name="txt_de_amount_per_day" required id="txt_de_amount_per_day" class="form-control">
+                                          <input type="text" name="edit_de_amount_per_day" required id="edit_de_amount_per_day" class="form-control">
                                        </div>
                                     </div>
                                     <div class="form-group col-xs-6">
                                        <label for="">Unit Price:</label>
                                        <div class="input-group">
                                           <div class="input-group-addon">$</div>
-                                          <input type="text" name="txt_unit_price" id="txt_unit_price" class="form-control">
+                                          <input type="text" name="edit_unit_price" id="edit_unit_price" class="form-control">
                                        </div>
                                     </div>
 
@@ -378,30 +491,26 @@ if (isset($_GET['id'])) {
                                        <label for="">Deprecation Amount Per Month:</label>
                                        <div class="input-group">
                                           <div class="input-group-addon">$</div>
-                                          <input type="text" name="txt_de_amount_per_month" required id="txt_de_amount_per_month" class="form-control">
+                                          <input type="text" name="edit_de_amount_per_month" required id="edit_de_amount_per_month" class="form-control">
                                        </div>
                                     </div>
                                     <div class="form-group col-xs-6">
                                        <label for="">Total Amount:</label>
                                        <div class="input-group">
                                           <div class="input-group-addon">$</div>
-                                          <input type="text" name="txt_total_amount" required id="txt_total_amount" class="form-control">
+                                          <input type="text" name="edit_total_amount" required id="edit_total_amount" class="form-control">
                                        </div>
                                     </div>
                                     <div class="form-group col-xs-6">
                                        <label for="">Deprecation Total Amount:</label>
                                        <div class="input-group">
                                           <div class="input-group-addon">$</div>
-                                          <input type="text" name="txt_depre_total_amount" required id="txt_depre_total_amount" class="form-control">
+                                          <input type="text" name="edit_depre_total_amount" required id="edit_depre_total_amount" class="form-control">
                                        </div>
                                     </div>
-                                    <div class="form-group col-xs-6">
-                                       <label for="">Material id:</label>
-                                       <input type="number" name="txt_material" required id="txt_material" class="form-control">
-                                    </div>
-                                    <div class="form-group col-xs-6">
+                                    <div class="form-group col-xs-12">
                                        <label for="">Note</label>
-                                       <textarea name="txt_note" required id="txt_note" rows="1" class="form-control"></textarea>
+                                       <textarea name="edit_note" required id="edit_note" rows="1" class="form-control"></textarea>
                                     </div>
                                  </div>
                               </div>
@@ -415,6 +524,39 @@ if (isset($_GET['id'])) {
                   </div>
                </div>
                <!-- end_edit_modal  -->
+               <div class="modal fade" id="modal_image" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle" aria-hidden="true">
+                  <div class="modal-dialog" role="document">
+                     <div class="modal-content">
+                        <div class="modal-header">
+                           <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                              <span aria-hidden="true">&times;</span>
+                           </button>
+                           <h4 class="modal-title" id="exampleModalLongTitle">Update Image</h4>
+                        </div>
+                        <div class="modal-body">
+                           <form action="" enctype="multipart/form-data" method="post">
+                              <input type="hidden" id="asset_photo" name="asset_photo" />
+                              <input type="hidden" name="txt_old_img" id="txt_old_img">
+                              <div class="row">
+                                 <div class="col xs-12">
+                                    <div class="form-group col-lg-12">
+                                       <img id="show_photo" class="rounded img-thumbnail img-fuild" style="width: 500px; height: 500px; " accept="image/*" alt="...">
+                                       <br />
+                                       <label>Upload Photo Here:</label>
+                                       <input type="file" id="edit_photo" name="edit_photo" values="upload" class="form-control" accept="image/*" onchange="show_photo_pre(event);"></input>
+                                    </div>
+                                 </div>
+                              </div>
+                              <div class="modal-footer">
+                                 <button type="submit" name="btnimage" class="btn btn-primary btn-sm"><i class="fa fa-save fa-fw"></i> Update</button>
+                                 <button type="button" class="btn btn-danger btn-sm" data-dismiss="modal"><i class="fa fa-undo"></i> Close</button>
+                              </div>
+                           </form>
+                        </div>
+                     </div>
+                  </div>
+               </div>
+               <!-- end image  -->
                <div class="col-xs-12 connectedSortable">
                   <div class="box">
                      <div class="box header">
@@ -439,7 +581,7 @@ if (isset($_GET['id'])) {
                                     <th>Deprecation Amount Pay Month</th>
                                     <th>Deprecation Total Amount</th>
                                     <th>Photo</th>
-                                    <th style="width: 130px;">Action</th>
+                                    <th style="width: 180px;">Action</th>
                                  </tr>
                               </thead>
                               <tbody>
@@ -464,6 +606,7 @@ if (isset($_GET['id'])) {
                                     $v_depre_pay_day = $row['adassd_depre_payday'];
                                     $v_depre_pay_month = $row['adassd_depre_amount_per_month'];
                                     $v_depre_total_amount = $row['adassd_depre_total_amount'];
+                                    $v_img = $row['adassd_img'];
                                  ?>
                                     <tr>
                                        <td class="text-center"><?= $v_i; ?></td>
@@ -472,20 +615,52 @@ if (isset($_GET['id'])) {
                                        <td class="text-center"><?= $v_as_name; ?></td>
                                        <td class="text-center"><?= $v_start_date; ?></td>
                                        <td class="text-center"><?= $v_as_qty; ?></td>
-                                       <td class="text-center"><?= number_format($v_price) . '$'; ?></td>
-                                       <td class="text-center"><?= number_format($v_total) . '$'; ?></td>
+                                       <td class="text-center"><?= $v_price . '$'; ?></td>
+                                       <td class="text-center"><?= $v_total . '$'; ?></td>
                                        <td class="text-center"><?= $v_depre_no; ?></td>
                                        <td class="text-center"><?= $v_depre_date; ?></td>
-                                       <td class="text-center"><?= number_format($v_depre_pay_day) . '$'; ?></td>
-                                       <td class="text-center"><?= number_format($v_depre_pay_month) . '$'; ?></td>
-                                       <td class="text-center"><?= number_format($v_depre_total_amount) . '$'; ?></td>
-
+                                       <td class="text-center"><?= $v_depre_pay_day . '$'; ?></td>
+                                       <td class="text-center"><?= $v_depre_pay_month . '$'; ?></td>
+                                       <td class="text-center"><?= $v_depre_total_amount . '$'; ?></td>
                                        <td class="text-center">
-                                          <img src="../img/no_image.jpg" width="60" height="60" alt="">
+                                          <img class="rounded img-fuild" src="../img<?php if ($v_img != '') {
+                                                                                       echo '/upload/asset_depreciation/' . $v_img;
+                                                                                    } else {
+                                                                                       echo '/no_image.jpg';
+                                                                                    } ?>" ismap style="width:50px; height:50px;" />
+                                          <a style="float:right; cursor:pointer;" onclick="doImage(
+                                                               '<?= $row['adassd_id']; ?>',
+                                                               '<?= $row['adassd_img']; ?>',
+                                                            );" data-toggle="modal" data-target="#modal_image" href="#"><i style="color:#3c8dbc;" class="fa fa-pencil"></i>
+                                          </a>
                                        </td>
                                        <td style="vertical-align: middle;" class="text-center">
-                                          <a class="btn btn-sm btn-primary" href=""><i class="fa fa-eye"></i></a>
-                                          <a class="btn btn-sm btn-info" data-toggle="modal" data-target="#modal_update" href="">
+                                          <a class="btn btn-sm btn-primary" href="admin_asset_depreciation_view.php?id=<?php echo $row['adassd_id']; ?>"><i class="fa fa-eye"></i>
+                                          </a>
+
+                                          <a target="_blank" class="btn btn-sm btn-success" href="print_depreciation.php?id=<?php echo $row['adassd_id']; ?>"><i class="fa fa-print"></i>
+                                          </a>
+
+                                          <a onclick="doupdate(
+                                                '<?php echo $row['adassd_id']; ?>',
+                                                '<?php echo $row['adassd_code']; ?>',
+                                                '<?php echo $row['adassd_depre_no']; ?>',
+                                                '<?php echo $row['adassd_category']; ?>',
+                                                '<?php echo $row['adassd_depre_age']; ?>',
+                                                '<?php echo $row['adassd_type']; ?>',
+                                                '<?php echo $row['adassd_asset_name']; ?>',
+                                                '<?php echo $row['adassd_depre_date']; ?>',
+                                                '<?php echo $row['adassd_qty']; ?>',
+                                                '<?php echo $row['adassd_mou']; ?>',
+                                                '<?php echo $row['adassd_depre_payday']; ?>',
+                                                '<?php echo $row['adassd_price']; ?>',
+                                                '<?php echo $row['adassd_depre_amount_per_month']; ?>',
+                                                '<?php echo $row['adassd_amount']; ?>',
+                                                '<?php echo $row['adassd_depre_total_amount']; ?>',
+                                                '<?php echo $row['adassd_note']; ?>',
+                                                '<?php echo $row['adassd_mater_id']; ?>',
+                                                '<?php echo $row['adassd_date']; ?>',
+                                             );" class="btn btn-sm btn-info" data-toggle="modal" data-target="#modal_update" href="">
                                              <i class="fa fa-edit"></i>
                                           </a>
                                           <a class="btn btn-sm btn-danger" onclick="return confirm('Are you sure deleted this row??'); " href="admin_asset_depreciation.php?id=<?= $row['adassd_id']; ?>"><i class="fa fa-trash"></i></a>
@@ -570,45 +745,49 @@ if (isset($_GET['id'])) {
             });
          });
 
+         function doupdate(id, as_code, dep_no, category, dep_age, as_type, as_name, dep_start_date, qty, mou, dep_day, price, edit_de_amount_per_month, edit_total_amount, edit_depre_total_amount, edit_note, edit_material, date) {
+            $("#edit_id").val(id);
+            $("#edit_code").val(as_code).change();
+            $("#edit_depre_no").val(dep_no);
+            $("#edit_category").val(category).change();
+            $("#edit_depre_age").val(dep_age);
+            $("#edit_as_type").val(as_type).change();
+            $("#edit_as_name").val(as_name);
+            $("#edit_depre_start_date").val(dep_start_date);
+            $("#edit_QTY").val(qty);
+            $("#edit_mou").val(mou).change();
+            $("#edit_de_amount_per_day").val(dep_day);
+            $("#edit_unit_price").val(price);
+            $("#edit_de_amount_per_month").val(edit_de_amount_per_month);
+            $("#edit_total_amount").val(edit_total_amount);
+            $("#edit_depre_total_amount").val(edit_depre_total_amount);
+            $("#edit_material").val(edit_material);
+            $("#edit_note").val(edit_note);
+            $("#edit_date").val(date);
+         }
+
          function doImage(id, photo) {
             $('#asset_photo').val(id);
             $("#txt_old_img").val(photo);
             if (photo == '' || photo == "NULL") {
-               document.getElementById('v_show_photo').setAttribute('src', '../img/no_image.jpg');
+               document.getElementById('show_photo').setAttribute('src', '../img/no_image.jpg');
             } else {
-               document.getElementById('v_show_photo').setAttribute('src', '../img/upload/asset_replacement/image/' + photo);
+               document.getElementById('show_photo').setAttribute('src', '../img/upload/asset_depreciation/' + photo);
             }
          }
 
          function show_photo_pre(event) {
             if (event.target.files.length > 0) {
                var src = URL.createObjectURL(event.target.files[0]);
-               document.getElementById('v_show_photo').src = src;
+               document.getElementById('show_photo').src = src;
             }
          }
 
-         function show_photo_pre_add(event) {
-            if (event.target.files.length > 0) {
-               var src = URL.createObjectURL(event.target.files[0]);
-               document.getElementById("show_photo").src = src;
-            }
-         }
-
-         function loadFile(e) {
-            var output = document.getElementById("file_update");
-            output.width = 50;
-            output.scr = URL.createObjectURL(e.target.files[0]);
-         }
-
-         function doFile(id, file) {
-            $("#edit_file").val(id);
-            $("#old_file").val(file);
-         }
          $(function() {
             $("select").selectpicker();
             $("#menu_admin_manage").addClass("active");
-            $("#asset_replace").addClass("active");
-            $("#asset_replace").css("background-color", "##367fa9");
+            $("#asset_depre").addClass("active");
+            $("#asset_depre").css("background-color", "##367fa9");
             $('#info_data').dataTable();
          });
       </script>

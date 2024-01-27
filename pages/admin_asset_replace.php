@@ -53,7 +53,6 @@ if (isset($_POST['btnadd_new'])) {
    $v_asset_condition = $_POST['asset_condition'];
    $v_asset_inspection = $_POST['asset_inspection'];
    $v_replace_no = $_POST['asset_material_id'];
-   $v_material_id = $_POST['asset_material_id'];
    /** Insert to database */
 
    $sql = "INSERT INTO admin_asset_replacement(
@@ -79,7 +78,6 @@ if (isset($_POST['btnadd_new'])) {
                                           ,adassr_war_con
                                           ,adassr_insepection
                                           ,adassr_replace_no
-                                          ,adssr_material_id
                                           ,adassr_userid
                                           ,adassr_created_date
                                           )
@@ -106,16 +104,21 @@ if (isset($_POST['btnadd_new'])) {
                                              ,'$v_asset_condition'
                                              ,'$v_asset_inspection'
                                              ,'$v_replace_no'
-                                             ,'$v_material_id'
                                              ,'$user_id'
                                              ,NOW()
                                           );";
    /** query to database */
    $result = mysqli_query($connect, $sql);
+   /**get last index */
+   $last_index_query = "SELECT max(adassr_id) FROM admin_asset_replacement";
+   $last_index_result = mysqli_query($connect, $last_index_query);
+   $last_index_row = mysqli_fetch_assoc($last_index_result);
    /** Add to material form */
-   if (!empty($_POST['asset_material']) || !empty($_POST['asset_remark'])) {
-      for ($a = 0; $a < count($_POST['asset_material']); $a++) {
-         $sql_m = "INSERT INTO admin_replacement_material(
+   if ($last_index_row) {
+      $get_last_index = $last_index_row['max(adassr_id)'];
+      if (!empty($_POST['asset_material']) || !empty($_POST['asset_remark'])) {
+         for ($a = 0; $a < count($_POST['asset_material']); $a++) {
+            $sql_m = "INSERT INTO admin_replacement_material(
                                                    adrm_material_name,
                                                    adrm_qty,
                                                    adrm_mou_id,
@@ -127,14 +130,15 @@ if (isset($_POST['btnadd_new'])) {
                                                          ,'" . $_POST['asset_qty_insert'][$a] . "'
                                                          ,'" . $_POST['asset_in_mou'][$a] . "'
                                                          ,'" . $_POST['asset_remark'][$a] . "'
-                                                         ,'" . $v_material_id . "'
+                                                         ,'$get_last_index'
                                                       )";
-         /** query to database  */
-         mysqli_query($connect, $sql_m);
+            /** query to database  */
+            mysqli_query($connect, $sql_m);
+         }
       }
+      header('location:admin_asset_replace.php?message=success');
+      exit();
    }
-   header('location:admin_asset_replace.php?message=success');
-   exit();
 }
 /** Delete Record */
 if (isset($_GET['del_id'])) {
@@ -212,17 +216,17 @@ if (isset($_POST['btnimage'])) {
    }
 }
 /** update_files */
-if(isset($_POST['btnUpdate_file'])){
+if (isset($_POST['btnUpdate_file'])) {
    $v_file_id = $_POST['edit_file'];
    $v_file = @$_FILES['file_update'];
    $dir = '../img/upload/asset_replacement/file' . basename($_FILES['file_update']['name']);
    $file_type = strtolower(pathinfo($dir, PATHINFO_EXTENSION));
-   if($file_type == 'pdf'){
-      if($v_file['name']!=""){
-         $new_name = date("Ymd") . "-" . rand(1111,9999) . ".pdf";
-         move_uploaded_file($v_file['tmp_name'],'../img/upload/asset_replacement/file/'. $new_name);
+   if ($file_type == 'pdf') {
+      if ($v_file['name'] != "") {
+         $new_name = date("Ymd") . "-" . rand(1111, 9999) . ".pdf";
+         move_uploaded_file($v_file['tmp_name'], '../img/upload/asset_replacement/file/' . $new_name);
          $sql = "UPDATE admin_asset_replacement SET adassr_file = '$new_name' where adassr_id ='$v_file_id'";
-         mysqli_query($connect,$sql);
+         mysqli_query($connect, $sql);
          header("location:admin_asset_replace.php?message=update");
          exit();
       }
@@ -333,14 +337,7 @@ if(isset($_POST['btnUpdate_file'])){
                                           </figure>
                                           <input class="form-control" type="file" name="asset_image" id="asset_image" accept="image/*" onchange="show_photo_pre_add(event);">
                                        </div>
-                                       <div class="form-group col-md-12">
-                                          <label for="">Replace No:</label>
-                                          <input type="text" name="asset_replace_no" id="asset_replace_no" class="form-control">
-                                       </div>
-                                       <div class="form-group col-md-12">
-                                          <label for="">Material_ID:</label>
-                                          <input type="number" name="asset_material_id" id="asset_material_id" required class="form-control">
-                                       </div>
+
                                     </div>
                                     <div class="col-xs-4">
                                        <div class="form-group col-md-12">
@@ -460,6 +457,10 @@ if(isset($_POST['btnUpdate_file'])){
                                     <div class="col-xs-4">
                                        <div class="form-group col-md-12">
                                           <label style="font-size: 20px; text-align: center; " for="">Calendar Selection:</label>
+                                       </div>
+                                       <div class="form-group col-md-12">
+                                          <label for="">Replace No:</label>
+                                          <input type="text" name="asset_replace_no" id="asset_replace_no" class="form-control">
                                        </div>
                                        <div class="form-group col-md-12">
                                           <label for="asset_start_date">Start Date:</label>
@@ -793,7 +794,7 @@ if(isset($_POST['btnUpdate_file'])){
                               <input type="hidden" name="old_file" id="old_file">
                               <div class="col-xs-12 form-group">
                                  <label for="">File:</label>
-                                 <input type="file" name="file_update" class="form-control" accept=".pdf" id="file_update"onchange ="loadFile(event);">
+                                 <input type="file" name="file_update" class="form-control" accept=".pdf" id="file_update" onchange="loadFile(event);">
                               </div>
                         </div>
                         <div class="modal-footer">
@@ -894,7 +895,7 @@ if(isset($_POST['btnUpdate_file'])){
                                           <?php
                                           }
                                           ?>
-                                          <a style="float:right; cursor:pointer;" onclick="doFile('<?php echo $row['adassr_id'];?>','<?php echo $v_file;?>');" href=""data-toggle="modal" data-target="#modal_file"><i class="fa fa-pencil" ></i></a>
+                                          <a style="float:right; cursor:pointer;" onclick="doFile('<?php echo $row['adassr_id']; ?>','<?php echo $v_file; ?>');" href="" data-toggle="modal" data-target="#modal_file"><i class="fa fa-pencil"></i></a>
                                        </td>
                                        <td class="text-center" style="vertical-align: middle;">
                                           <a onclick="doUpdate(
@@ -922,7 +923,7 @@ if(isset($_POST['btnUpdate_file'])){
                                              '<?php echo $row['adassr_insepection']; ?>',
                                           );" class="btn btn-sm btn-primary" href="#" data-toggle="modal" data-target="#modal_update"><i class="fa fa-edit"></i>
                                           </a>
-                                          <a class="btn btn-sm btn-info" href="admin_asset_replace_view.php?id=<?=$row['adassr_id'];?>&&material_id=<?=$row['adssr_material_id'];?>"><i class="fa fa-eye"></i></a>
+                                          <a class="btn btn-sm btn-info" href="admin_asset_replace_view.php?id=<?= $row['adassr_id'];?>"><i class="fa fa-eye"></i></a>
                                           <a class="btn btn-sm btn-danger" onclick="return confirm('Are you sure to delete?');" href="admin_asset_replace.php?del_id=<?= $row['adassr_id']; ?>"><i class="fa fa-trash"></i></a>
                                        </td>
                                     </tr>
@@ -1052,12 +1053,14 @@ if(isset($_POST['btnUpdate_file'])){
                document.getElementById("show_photo").src = src;
             }
          }
-         function loadFile(e){
-            var output =document.getElementById("file_update");
+
+         function loadFile(e) {
+            var output = document.getElementById("file_update");
             output.width = 50;
-            output.scr =URL.createObjectURL(e.target.files[0]);
+            output.scr = URL.createObjectURL(e.target.files[0]);
          }
-         function doFile(id,file){
+
+         function doFile(id, file) {
             $("#edit_file").val(id);
             $("#old_file").val(file);
          }

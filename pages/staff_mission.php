@@ -258,11 +258,15 @@ if (isset($_GET["del_id"])) {
                                                    <select class="form-control" name="status" id="status" data-live-search="true">
                                                       <option selected value=""></option>
                                                       <?php
-                                                      $sql = "SELECT * FROM text_mission_status";
-                                                      $result = $connect->query($sql);
-                                                      while ($row = mysqli_fetch_assoc($result)) {
-                                                         echo "<option value='" . $row['tms_id'] . "' >" . $row['tms_name'] . "</option>";
-                                                      }
+                                                         $user_id = $_SESSION['user_id'];
+                                                         $sql = "SELECT * FROM text_mission_status A
+                                                                           LEFT JOIN text_mission_status_user B ON B.msu_status_id=A.tms_id
+                                                                           WHERE msu_user_id=$user_id
+                                                                           ";
+                                                         $result = $connect->query($sql);
+                                                         while ($row = mysqli_fetch_assoc($result)) {
+                                                            echo "<option value='" . $row['tms_id'] . "' >" . $row['tms_name'] . "</option>";
+                                                         }
                                                       ?>
                                                    </select>
                                                 </div>
@@ -355,11 +359,15 @@ if (isset($_GET["del_id"])) {
                                              <select name="edit_status" id="edit_status" data-live-search="true">
                                                 <option selected value=""></option>
                                                 <?php
-                                                $sql = "SELECT * FROM text_mission_status";
-                                                $result = mysqli_query($connect, $sql);
-                                                while ($row = mysqli_fetch_assoc($result)) {
-                                                   echo '<option value="' . $row['tms_id'] . '" >' . $row['tms_name'] . '</option>';
-                                                }
+                                                   $user_id = $_SESSION['user_id'];
+                                                   $sql = "SELECT * FROM text_mission_status A
+                                                                     LEFT JOIN text_mission_status_user B ON B.msu_status_id=A.tms_id
+                                                                     WHERE msu_user_id=$user_id
+                                                                     ";
+                                                   $result = mysqli_query($connect, $sql);
+                                                   while ($row = mysqli_fetch_assoc($result)) {
+                                                      echo '<option value="' . $row['tms_id'] . '" >' . $row['tms_name'] . '</option>';
+                                                   }
                                                 ?>
                                              </select>
                                           </div>
@@ -546,6 +554,7 @@ if (isset($_GET["del_id"])) {
       $('#txt_job_id').change(function() {
          $('.show_hid').css("display", "block");
          var job_id = $("#txt_job_id").val();
+         console.log(job_id);
          if (job_id) {
             $.ajax({
                type: 'POST',

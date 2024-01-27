@@ -1,7 +1,27 @@
 <?php
-include '../config/db_connect.php';
-$user_id = $_SESSION['user_id'];
-$username = $_SESSION['username'];
+require 'function.php';
+
+
+if(request('btnadd')){
+   $data = [
+      'ub_code'=> $_POST["txt_code"],
+      'ub_name'=>$_POST["txt_name"],
+      'ub_tel'=>$_POST["txt_tel"],
+      'ub_company_id'=>$_POST["txt_company"],
+      'ub_note'=>$_POST["txt_note"]
+   ];
+   $require = ['ub_code','ub_name','ub_tel'];
+   /**
+    * SOME field we need to require.
+    */
+   Validator::has_require($data,$require) ? 
+   $insert = insert($data,'user_branch',$connect) : redirect('validate','branch');
+   $insert ?
+   redirect('success', 'branch')
+   :
+   '';
+}
+
 
 
 if (isset($_POST["btnadd"])) {
@@ -287,6 +307,8 @@ if (isset($_GET["del_id"])) {
                                                     <td scope="row"><?php echo $v_comp_id; ?></td>
                                                     <td scope="row"><?php echo $v_note; ?></td>
                                                     <td scope="row">
+                                                        <a href="branch_auth_user.php?sent_id=<?php echo $row['ub_id']; ?>" class="btn btn-info btn-sm"><i style="color:white;" class="fa fa-key"></i></a>
+                                          
                                                         <!-- <a href="edit_branch.php?id=<?php echo $row['ub_id']; ?>" class="btn btn-info btn-sm"><i style="color:white;" class="fa fa-eye"></i></a> -->
                                                         <a onclick="doUpdate(<?php echo $row['ub_id']; ?>,
                                                         '<?php echo $v_code; ?>',

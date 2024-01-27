@@ -5,21 +5,54 @@ $datetime = date('Y-m-d H:i:s');
 $yeardate = date('Y-m-d');
 $user_id = $_SESSION['user_id'];
 $username = $_SESSION['username'];
-if(isset($_GET['id'])){
+$id_select ?? $_GET['id'];
+if (isset($_GET['id'])) {
    $id_select = $_GET['id'];
    $SQL = "SELECT * FROM admin_asset_transfer WHERE adasst_id = '$id_select'";
    $result = mysqli_query($connect, $SQL);
    $row = mysqli_fetch_assoc($result);
-
+   /** row  */
+   $_code = $row['adasst_code'];
+   $_type = $row['adasst_type'];
+   $_category = $row['adasst_category'];
+   $_asset_name = $row['adasst_asset_name'];
+   $_asset_qty = $row['adasst_qty'];
+   $_asset_mou = $row['adasst_mou'];
+   $_total = $row['adasst_total'];
+   $_transfer_no = $row['adasst_transfer_no'];
+   $_transfer_from = $row['adasst_company_transfer_from'];
+   $_transfer_to = $row['adasst_company_transfer_to'];
+   $_transfer_date = $row['adasst_transfer_date'];
+   $_current_price = $row['adasst_unit_price'];
+   $_status = $row['adasst_status'];
+   $_date = $row['adasst_date'];
+   $_reason = $row['adasst_reason'];
+   $_img = $row['adasst_img'];
+   $_branch_tf_from = $row['adasst_branch_tf_from'];
+   $_branch_tf_to = $row['adasst_branch_tf_to'];
 }
-if (isset($_GET['id_'])) {
-   $id = $_GET['id_'];
-   $sql = "delete from admin_asset_transfer_material where adasstm_id = '$id'";
+if (isset($_GET['deleted'])) {
+   $id_select ?? $_GET['id'];
+   $id_delete = $_GET['deleted'];
+   $sql = "DELETE from admin_asset_transfer_material where adasstm_id = $id_delete";
    $result = mysqli_query($connect, $sql);
-   header("location: admin_asset_transfer.php?message=delete");
+   header("location: admin_asset_transfer_view.php?id=" . $id_select . "");
    exit();
 }
-
+if (isset($_POST['btn_update'])) {
+   $_post_id = $_POST['mat_id'];
+   $_post_mat_name = $_POST['mat_name'];
+   $_post_qty = $_POST['mat_qty'];
+   $_post_remark = $_POST['mat_remark'];
+   $_post_mou = $_POST['mat_mou'];
+   $_sql = "UPDATE admin_asset_transfer_material SET adasstm_name ='$_post_mat_name',
+                                                      adasstm_qty ='$_post_qty',
+                                                      adasstm_remark='$_post_remark',
+                                                      adasstm_mou='$_post_mou' WHERE adasstm_id = '$_post_id'";
+   $result = mysqli_query($connect, $_sql);
+   header("location: admin_asset_transfer_view.php?id=" . $id_select . "");
+   exit();
+}
 ?>
 <html>
 
@@ -79,11 +112,13 @@ if (isset($_GET['id_'])) {
          .btn_no_print {
             display: none !important;
          }
-         .form-none_display{
+
+         .form-none_display {
             border: none;
             outline: none;
          }
-         .th_none_display{
+
+         .th_none_display {
             display: none;
          }
       }
@@ -102,6 +137,54 @@ if (isset($_GET['id_'])) {
             <div class="col-xs-12 connectedSortable">
                <div class="box">
                   <div class="box-header">
+                     <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                        <div class="modal-dialog" role="document">
+                           <div class="modal-content">
+                              <div class="modal-header">
+                                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                 </button>
+                                 <h4 class="modal-title" id="exampleModalLabel">Modal title</h4>
+                              </div>
+                              <form action="" enctype="multipart/form-data" method="post">
+                                 <input type="hidden" id="mat_id" name="mat_id">
+                                 <div class="modal-body">
+                                    <div class="col-xs-12">
+                                       <div class="col-xs-6">
+                                          <label for="">Material_Name:</label>
+                                          <input type="text" name="mat_name" class="form-control" id="mat_name">
+                                       </div>
+                                       <div class="col-xs-6">
+                                          <label for="">QTY:</label>
+                                          <input type="text" name="mat_qty" class="form-control" id="mat_qty">
+                                       </div>
+                                       <div class="col-xs-6">
+                                          <label for="mat_mou" class="form-label">Mou:</label>
+                                          <select name="mat_mou" id="mat_mou" class="form-control" data-live-search="true">
+                                             <option selected value=""></option>
+                                             <?php
+                                             $sql = "SELECT * FROM text_asset_in_mou";
+                                             $result = mysqli_query($connect, $sql);
+                                             while ($row = mysqli_fetch_assoc($result)) {
+                                                echo '<option value=' . $row['aim_id'] . '>' . $row['aim_name'] . '</option>';
+                                             }
+                                             ?>
+                                          </select>
+                                       </div>
+                                       <div class="col-xs-6">
+                                          <label for="">Remark:</label>
+                                          <textarea rows="2" name="mat_remark" class="form-control" id="mat_remark"></textarea>
+                                       </div>
+                                    </div>
+                                 </div>
+                                 <div class="modal-footer">
+                                    <button type="submit" name="btn_update" class="btn btn-sm btn-primary">Save</button>
+                                    <button type="button" class="btn btn-sm btn-danger" data-dismiss="modal">Close</button>
+                                 </div>
+                              </form>
+                           </div>
+                        </div>
+                     </div>
                      <form action="" enctype="multipart/form-data" method="post">
                         <div class="row col-xs-12">
                            <div class="row_asset row col-xs-4">
@@ -109,9 +192,10 @@ if (isset($_GET['id_'])) {
                                  <label for="">Asset Code:</label>
                                  <select class="form-control select2" name="" id="">
                                     <?php
+
                                     $v_select = mysqli_query($connect, "SELECT * FROM assest_code_creation ORDER BY ac_asset_code ASC");
                                     while ($row_se = mysqli_fetch_assoc($v_select)) {
-                                       if ($row['adasst_code'] == $row_se['ac_id']) {
+                                       if ($_code == $row_se['ac_id']) {
                                     ?>
                                           <option selected="selected" value="<?php echo $row_se['ac_id'] ?>"><?php echo $row_se['ac_asset_code']; ?></option>
                                        <?php
@@ -128,9 +212,10 @@ if (isset($_GET['id_'])) {
                                  <label for="">Asset Type:</label>
                                  <select class="form-control select2" name="" id="">
                                     <?php
+
                                     $v_select = mysqli_query($connect, "SELECT * FROM text_asset_code_creation_type ORDER BY acct_name ASC");
                                     while ($row_se = mysqli_fetch_assoc($v_select)) {
-                                       if ($row['adasst_type'] == $row_se['acct_id']) {
+                                       if ($_type == $row_se['acct_id']) {
                                     ?>
                                           <option selected="selected" value="<?php echo $row_se['acct_id'] ?>"><?php echo $row_se['acct_name']; ?></option>
                                        <?php
@@ -149,7 +234,7 @@ if (isset($_GET['id_'])) {
                                     <?php
                                     $v_select = mysqli_query($connect, "SELECT * FROM assest_code_creation ORDER BY as_asset_category ASC");
                                     while ($row_se = mysqli_fetch_assoc($v_select)) {
-                                       if ($row['adasst_category'] == $row_se['ac_id']) {
+                                       if ($_category == $row_se['ac_id']) {
                                     ?>
                                           <option selected="selected" value="<?php echo $row_se['ac_id'] ?>"><?php echo $row_se['as_asset_category']; ?></option>
                                        <?php
@@ -162,21 +247,36 @@ if (isset($_GET['id_'])) {
                                     ?>
                                  </select>
                               </div>
+                              <?php
+                              if ($_branch_tf_from != 0) {
+                                 $sql = "select ub_id,ub_name as name from user_branch where ub_id = $_branch_tf_from";
+                                 $stmt = $connect->query($sql);
+                                 $fetch = $stmt->fetch_assoc();
+                                 $rows_branch_tf_from = $fetch['name'];
+                              }else{
+                                 $rows_branch_tf_from = 0;
+                              }
+                              ?>
+                              <div class="form-group col-xs-12">
+                                 <label for="">Branch Transfer From:</label>
+                                 <input style="font-weight: 800;" type="text" value="<?= $rows_branch_tf_from ?>" name="" id="" class="form-control">
+                              </div>
                               <div class="form-group col-xs-12">
                                  <label for="">Asset Name:</label>
-                                 <input style="font-weight: 800;" type="text" name="" id="" value="<?= $row['adasst_asset_name'] ?>" class="form-control">
+                                 <input style="font-weight: 800;" type="text" name="" id="" value="<?= $_asset_name ?>" class="form-control">
                               </div>
                               <div class="form-group col-xs-12">
                                  <label for="">QTY:</label>
-                                 <input style="font-weight: 800;" type="text" name="" id="" value="<?= $row['adasst_qty'] ?>" class="form-control">
+                                 <input style="font-weight: 800;" type="text" name="" id="" value="<?= $_asset_qty ?>" class="form-control">
                               </div>
                               <div class="form-group col-xs-12">
                                  <label for="">Mou:</label>
                                  <select class="form-control select2" name="" id="">
                                     <?php
+
                                     $v_select = mysqli_query($connect, "SELECT * FROM text_asset_in_mou ORDER BY aim_name ASC");
                                     while ($row_se = mysqli_fetch_assoc($v_select)) {
-                                       if ($row['adasst_mou'] == $row_se['aim_id']) {
+                                       if ($_asset_mou == $row_se['aim_id']) {
                                     ?>
                                           <option selected="selected" value="<?php echo $row_se['aim_id'] ?>"><?php echo $row_se['aim_name']; ?></option>
                                        <?php
@@ -193,28 +293,69 @@ if (isset($_GET['id_'])) {
                                  <label for="">Total Amount:</label>
                                  <div class="input-group">
                                     <div class="input-group-addon">$</div>
-                                    <input style="font-weight: 800;" type="text" name="" id="" value="<?= $row['adasst_total'] . '$' ?>" class="form-control">
+                                    <input style="font-weight: 800;" type="text" name="" id="" value="<?= $_total . '$' ?>" class="form-control">
                                  </div>
                               </div>
                            </div>
+                  
                            <div class="row_asset row col-xs-4">
                               <div class="form-group col-xs-12">
                                  <label for="">Transfer No:</label>
-                                 <input style="font-weight: 800;" type="text" value="<?= $row['adasst_transfer_no'] ?>" name="" id="" class="form-control">
+                                 <input style="font-weight: 800;" type="text" value="<?= $_transfer_no ?>" name="" id="" class="form-control">
                               </div>
+                              <?php
+                              if ($_transfer_from != 0) {
+                                 $sql = "select c_id,c_name_kh as name from company where c_id = $_transfer_from";
+                                 $stmt = $connect->query($sql);
+                                 $fetch = $stmt->fetch_assoc();
+                                 $rows_company_tf_from = $fetch['name'];
+                              }else{
+                                 $rows_company_tf_from = 0;
+                              }
+                              ?>
                               <div class="form-group col-xs-12">
-                                 <label for="">Transfer To:</label>
-                                 <input style="font-weight: 800;" type="text" value="<?= $row['adasst_transfer_to'] ?>" name="" id="" class="form-control">
+                                 <label for="">Company Transfer From:</label>
+                                 <input style="font-weight: 800;" type="text" value="<?= $rows_company_tf_from ?>" name="" id="" class="form-control">
+                              </div>
+                              <?php
+                              if ($_transfer_to != 0) {
+                                 $sql = "select c_id,c_name_kh as name from company where c_id = $_transfer_to";
+                                 $stmt = $connect->query($sql);
+                                 $fetch = $stmt->fetch_assoc();
+                                 $rows_company_tf_to = $fetch['name'];
+                              }else{
+                                 $rows_company_tf_to = 0;
+                              }
+                              ?>
+                              
+                              <div class="form-group col-xs-12">
+                                 <label for="">Company Transfer To:</label>
+                                 <input style="font-weight: 800;" type="text" value="<?= $rows_company_tf_to ?>" name="" id="" class="form-control">
+                              </div>
+                           
+                              <?php
+                              if ($_branch_tf_to != 0) {
+                                 $sql = "select ub_id,ub_name as name from user_branch where ub_id = $_branch_tf_to";
+                                 $stmt = $connect->query($sql);
+                                 $fetch = $stmt->fetch_assoc();
+                                 $rows_branch_tf_to = $fetch['name'];
+                              }else{
+                                 $rows_branch_tf_to = 0;
+                              }
+                              ?>
+                              <div class="form-group col-xs-12">
+                                 <label for="">Branch Transfer To:</label>
+                                 <input style="font-weight: 800;" type="text" value="<?= $rows_branch_tf_to ?>" name="" id="" class="form-control">
                               </div>
                               <div class="form-group col-xs-12">
                                  <label for="">Transfer Date:</label>
-                                 <input style="font-weight: 800;" type="date" value="<?= $row['adasst_transfer_date'] ?>" name="" id="" class="form-control">
+                                 <input style="font-weight: 800;" type="date" value="<?= $_transfer_date ?>" name="" id="" class="form-control">
                               </div>
                               <div class="form-group col-xs-12">
                                  <label for="">Current Unit Price:</label>
                                  <div class="input-group">
                                     <div class="input-group-addon">$</div>
-                                    <input style="font-weight: 800;" type="text" name="" id="" value="<?= $row['adasst_unit_price'] . '$' ?>" class="form-control">
+                                    <input style="font-weight: 800;" type="text" name="" id="" value="<?= $_current_price . '$' ?>" class="form-control">
                                  </div>
                               </div>
                               <div class="form-group col-xs-12">
@@ -223,7 +364,7 @@ if (isset($_GET['id_'])) {
                                     <?php
                                     $v_select = mysqli_query($connect, "SELECT * FROM text_asset_in_status ORDER BY ais_name ASC");
                                     while ($row_se = mysqli_fetch_assoc($v_select)) {
-                                       if ($row['adasst_status'] == $row_se['ais_id']) {
+                                       if ($_status == $row_se['ais_id']) {
                                     ?>
                                           <option selected="selected" value="<?php echo $row_se['ais_id'] ?>"><?php echo $row_se['ais_name']; ?></option>
                                        <?php
@@ -238,88 +379,83 @@ if (isset($_GET['id_'])) {
                               </div>
                               <div class="form-group col-xs-12">
                                  <label for="">Start Date:</label>
-                                 <input style="font-weight: 800;" type="date" value="<?= $row['adasst_date'] ?>" name="" id="" class="form-control">
+                                 <input style="font-weight: 800;" type="date" value="<?= $_date ?>" name="" id="" class="form-control">
                               </div>
-                              <div class="form-group col-xs-12">
-                                 <label for="">Reason:</label>
-                                 <textarea style="font-weight: 800;" type="" value="<?= $row['adasst_reason'] ?>" name="" id="" rows="2" class="form-control"><?= $row['adasst_reason'] ?></textarea>
-                              </div>
+
                            </div>
+
                            <div class="row col-xs-4">
                               <div class="form-group col-xs-12">
                                  <label>Photo:</label><br />
-                                 <img id="show_photo" class="rounded img-thumbnail img-fuild" accept="image/*" alt="..." src="../img/<?php if ($row['adasst_img'] != '') {
-                                                                                                                                          echo 'upload/asset_transfer/' . $row['adasst_img'];
+                                 <img id="show_photo" class="rounded img-thumbnail img-fuild" accept="image/*" alt="..." src="../img/<?php if ($_img != '') {
+                                                                                                                                          echo 'upload/asset_transfer/' . $_img;
                                                                                                                                        } else {
                                                                                                                                           echo 'no_image.jpg';
                                                                                                                                        } ?>">
-                                 <input style="visibility: hidden;" type="file" id="edit_photo" name="edit_photo" values="upload" class="form-control" accept="image/*" onchange="show_photo_pre(event);"></input>
+                                 <input style="visibility: hidden;" type="file" id="edit_photo" name="edit_photo" values="upload" class="form-control" accept="image/*""></input>
                               </div>
                            </div>
-                           <div class="row col-xs-10">
-                              <table id='info_data' class="table table-striped table-responsive table-bordered">
-                                 <thead>
-                                    <tr>
-                                       <th class="text-center">No</th>
-                                       <th class="text-center">Material ID</th>
-                                       <th class="text-center">Material Name</th>
-                                       <th class="text-center">QTY</th>
-                                       <th style="width: 150px;" class="text-center">Mou</th>
-                                       <th class="th_none_display text-center">Action</th>
-                                    </tr>
-                                 </thead>
-                                 <tbody>
-                                    <?php
-                                    if (isset($_GET['material_code_id'])) {
-                                       $materail_code_id = $_GET['material_code_id'];
-                                       //$sql_m = "SELECT * FROM admin_asset_transfer A JOIN admin_asset_transfer_material B distinct A.adasst_material_id = B.adasstm_materail_id WHERE adasstm_materail_id = '$materail_code_id'";
-                                       // $sql_m = "SELECT adasstm_materail_id,adasstm_name,adasstm_qty,adasstm_remark 
-                                       //       from admin_asset_transfer_material left join admin_asset_transfer
-                                       //       on distinct(admin_asset_transfer.adasst_material_id)  = admin_asset_transfer_material.adasstm_materail_id where adasst_id = '$id'";
-                                       $sql_m = "SELECT admin_asset_transfer_material.adasstm_id , admin_asset_transfer_material.adasstm_materail_id, admin_asset_transfer_material.adasstm_name, admin_asset_transfer_material.adasstm_qty, admin_asset_transfer_material.adasstm_remark,admin_asset_transfer_material.adasstm_mou
-                                       FROM admin_asset_transfer_material
-                                       LEFT JOIN admin_asset_transfer
-                                       ON admin_asset_transfer.adasst_material_id = admin_asset_transfer_material.adasstm_materail_id
-                                       WHERE admin_asset_transfer.adasst_id = '$id_select'";
-                                       $result_m = mysqli_query($connect, $sql_m);
+                           <div class=" form-group col-xs-8">
+                                 <label for="">Reason:</label>
+                                 <textarea style="font-weight: 800;" type="" value="<?= $_reason ?>" name="" id="" rows="2" class="form-control"><?= $_reason ?></textarea>
+                              </div>
+                              <div class="row col-xs-10">
+                                 <table id='info_data' class="table table-striped table-responsive table-bordered">
+                                    <thead>
+                                       <tr>
+                                          <th class="text-center">No</th>
+                                          <th class="text-center">Material Name</th>
+                                          <th class="text-center">QTY</th>
+                                          <th style="width: 150px;" class="text-center">Mou</th>
+                                          <th style="width: 150px;" class="text-center">Remark</th>
+                                          <th class="th_none_display text-center">Action</th>
+                                       </tr>
+                                    </thead>
+                                    <tbody>
+                                       <?php
+                                       $sql_mat = "SELECT * FROM admin_asset_transfer_material 
+                                                   LEFT JOIN text_asset_in_mou ON text_asset_in_mou.aim_id = admin_asset_transfer_material.adasstm_mou
+                                       WHERE adasstm_materail_id = $id_select";
+                                       $_query_mat = $connect->query($sql_mat);
                                        $i = 1;
-                                       while ($row_m = mysqli_fetch_assoc($result_m)) {
-                                          $v_i = $i++;
-                                    ?>
+                                       while ($row_mat = $_query_mat->fetch_assoc()) {
+                                          $_count_i = $i++;
+                                          $_material_name = $row_mat['adasstm_name'];
+                                          $_material_qty = $row_mat['adasstm_qty'];
+                                          $_material_mou = $row_mat['aim_name'];
+                                          $_mater_remark = $row_mat['adasstm_remark'];
+                                       ?>
                                           <tr>
-                                             <td class="text-center"><?= $v_i; ?></td>
-                                             <td class="text-center"><input type="text" class="form-none_display form-control" value="<?= $row_m['adasstm_materail_id']; ?>"></td>
-                                             <td class="text-center"><input type="text" class="form-none_display form-control" value="<?= $row_m['adasstm_name']; ?>"></td>
-                                             <td class="text-center"><input type="text" class="form-none_display form-control" value="<?= number_format($row_m['adasstm_qty']); ?>"></td>
-                                             <td class="text-center">
-                                                   <?php 
-                                                      $mou_id = @$row_m['adasstm_mou'];
-                                                      if($mou_id == null || $mou_id== 0){
-                                                         echo $mou_id = null;
-                                                      }else{
-                                                          $sql = "SELECT * FROM text_asset_in_mou WHERE aim_id = '$mou_id'";
-                                                      $result = $connect->query($sql);
-                                                      $row = $result->fetch_assoc();
-                                                      echo $row['aim_name'];       
-                                                      }
-                                                   ?>
-                                             </td>
+                                             <td class="text-center"><?= $_count_i; ?></td>
+                                             <td class="text-center"><?= $_material_name ?></td>
+                                             <td class="text-center"><?= $_material_qty ?></td>
+                                             <td class="text-center"><?= $_material_mou ?></td>
+                                             <td class="text-center"><?= $_mater_remark ?></td>
                                              <td class="th_none_display text-center" style="width: 100px; vertical-align: middle; ">
-                                                <a style="color: white;" class="btn btn_no_print btn-sm btn-danger" onclick="return confirm('Are you sure to delete?');" href="admin_asset_transfer_view.php?id_=<?= $row_m['adasstm_id']; ?>"><i class="fa fa-trash"></i></a>
+                                                <a onclick="doUpdate('<?= $row_mat['adasstm_id']; ?>',
+                                                                     '<?= $row_mat['adasstm_name']; ?>',
+                                                                     '<?= $row_mat['adasstm_qty']; ?>',
+                                                                     '<?= $row_mat['adasstm_remark']; ?>',
+                                                                     '<?= $row_mat['adasstm_mou']; ?>',
+                                                                     );" style="color: white;" class="btn btn_no_print btn-sm btn-primary" data-toggle="modal" data-target="#exampleModal">
+                                                   <i class="fa fa-edit"></i>
+                                                </a>
+                                                <a style="color: white;" class="btn btn_no_print btn-sm btn-danger" onclick="return confirm('Are you sure to delete?');" href="admin_asset_transfer_view.php?id=<?= $id_select ?>&deleted=<?= $row_mat['adasstm_id']; ?>">
+                                                   <i class="fa fa-trash">
+                                                   </i>
+                                                </a>
                                              </td>
                                           </tr>
-                                    <?php
+                                       <?php
                                        }
-                                    }
-                                    ?>
-                                 </tbody>
-                              </table>
+                                       ?>
+                                    </tbody>
+                                 </table>
+                              </div>
                            </div>
-                        </div>
-                        <div class="form-group col-xs-12 text-right">
-                           <button type="submit" onclick="window.print();" class="no_print btn btn-success btn-lg"><i class="fa fa-print fa-fw"></i> Print</button>
-                           <a href="admin_asset_transfer.php" style="color:white;" class="no_print btn btn-danger btn-lg"><i class="fa fa-undo"></i> Back </a>
-                        </div>
+                           <div class="form-group col-xs-12 text-right">
+                              <a href="admin_asset_transfer.php" style="color:white;" class="no_print btn btn-danger btn-lg"><i class="fa fa-undo"></i> Back </a>
+                           </div>
                      </form>
                   </div>
                </div>
@@ -356,9 +492,17 @@ if (isset($_GET['id_'])) {
          $("#menu_admin_manage").addClass("active");
          $("#asset_transfer").addClass("active");
          $("#asset_transfer").css("background-color", "##367fa9");
-
          $('#info_data').dataTable();
       });
+
+      function doUpdate(id, name, qty, remark, mou) {
+         // console.log(id,name,qty,remark,mou);
+         $("#mat_id").val(id);
+         $("#mat_name").val(name);
+         $("#mat_qty").val(qty);
+         $("#mat_remark").val(remark);
+         $("#mat_mou").val(mou).change();
+      }
    </script>
 </body>
 

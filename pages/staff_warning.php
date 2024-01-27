@@ -220,11 +220,15 @@ if (isset($_GET["del_id"])) {
                                                          <label>Status:</label>
                                                          <select class="form-control" id="txt_status" name="txt_status" required>
                                                             <?php
-                                                            $sql = 'SELECT * FROM text_warning_status';
-                                                            $result = mysqli_query($connect, $sql);
-                                                            while ($row = mysqli_fetch_assoc($result)) {
-                                                               echo '<option value="' . $row['tws_id'] . '"> ' . $row['tws_name'] . '</option>';
-                                                            }
+                                                               $user_id = $_SESSION['user_id'];
+                                                               $sql = 'SELECT * FROM text_warning_status A
+                                                                                 LEFT JOIN text_warning_status_user B ON B.wsu_status_id=A.tws_id
+                                                                                 WHERE wsu_user_id=$user_id
+                                                                                 ';
+                                                               $result = mysqli_query($connect, $sql);
+                                                               while ($row = mysqli_fetch_assoc($result)) {
+                                                                  echo '<option value="' . $row['tws_id'] . '"> ' . $row['tws_name'] . '</option>';
+                                                               }
                                                             ?>
                                                          </select>
                                                       </div>
@@ -309,11 +313,15 @@ if (isset($_GET["del_id"])) {
                                              <label>Status:</label>
                                              <select class="form-control" id="edit_status" name="edit_status" required>
                                                 <?php
-                                                $sql = 'SELECT * FROM text_warning_status';
-                                                $result = mysqli_query($connect, $sql);
-                                                while ($row = mysqli_fetch_assoc($result)) {
-                                                   echo '<option value="' . $row['tws_id'] . '"> ' . $row['tws_name'] . '</option>';
-                                                }
+                                                   $user_id = $_SESSION['user_id'];
+                                                   $sql = 'SELECT * FROM text_warning_status A
+                                                                     LEFT JOIN text_warning_status_user B ON B.wsu_status_id=A.tws_id
+                                                                     WHERE wsu_user_id=$user_id
+                                                                     ';
+                                                   $result = mysqli_query($connect, $sql);
+                                                   while ($row = mysqli_fetch_assoc($result)) {
+                                                      echo '<option value="' . $row['tws_id'] . '"> ' . $row['tws_name'] . '</option>';
+                                                   }
                                                 ?>
                                              </select>
                                           </div>
